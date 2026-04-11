@@ -1,0 +1,178 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}جميع الدورات - رواق{% endblock %}
+
+{% block content %}
+<div class="container py-5" x-data="courseCatalog()" x-init="init()">
+    <div class="row">
+        <!-- Sidebar Filters -->
+        <div class="col-lg-3 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">البحث والتصفية</h5>
+                    
+                    <!-- Search Box -->
+                    <div class="mb-4">
+                        <label class="form-label">بحث</label>
+                        <input type="text" class="form-control" x-model="searchQuery" @input="performSearch" placeholder="ابحث عن دورة...">
+                    </div>
+                    
+                    <!-- Category Filter -->
+                    <div class="mb-4">
+                        <label class="form-label">التصنيف</label>
+                        <select class="form-select" x-model="selectedCategory" @change="filterCourses">
+                            <option value="">جميع التصنيفات</option>
+                            {% for category in categories %}
+                            <option value="{{ category.name }}">{{ category.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- Difficulty Filter -->
+                    <div class="mb-4">
+                        <label class="form-label">المستوى</label>
+                        <select class="form-select" x-model="selectedDifficulty" @change="filterCourses">
+                            <option value="">جميع المستويات</option>
+                            <option value="beginner">مبتدئ</option>
+                            <option value="intermediate">متوسط</option>
+                            <option value="advanced">متقدم</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Results Count -->
+                    <div class="alert alert-info" x-show="filteredCourses.length > 0">
+                        <i class="fas fa-search"></i> <span x-text="filteredCourses.length"></span> دورة
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Course Grid -->
+        <div class="col-lg-9">
+            <div class="row g-4">
+                <template x-for="course in filteredCourses" :key="course.id">
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card course-card h-100">
+                            <img :src="course.thumbnail_url || 'https://via.placeholder.com/300x200'" class="card-img-top" :alt="course.title" style="height: 180px; object-fit: cover;">
+                            <div class="card-body">
+                                <span class="badge bg-secondary mb-2" x-text="course.category_name"></span>
+                                <h5 class="card-title" x-text="course.title"></h5>
+                                <p class="card-text text-muted small" x-text="course.short_description?.substring(0, 80) + '...'"></p>
+                                <div class="d-flex justify-content-between align-items-center mt-3">
+                                    <span class="text-muted small">
+                                        <i class="fas fa-chalkboard-user"></i> <span x-text="course.instructor_name"></span>
+                                    </span>
+                                    <span class="badge" :class="{
+                                        'bg-success': course.difficulty === 'beginner',
+                                        'bg-warning': course.difficulty === 'intermediate',
+                                        'bg-danger': course.difficulty === 'advanced'
+                                    }" x-text="getDifficultyText(course.difficulty)"></span>
+                                </div>
+                            </div>
+                            <div class="card-footer bg-transparent border-0 pb-3">
+                                <a :href="`/course/${course.slug}/`" class="btn btn-mit-red w-100">تفاصيل الدورة</a>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+                
+                <!-- No Results -->
+                <div class="col-12 text-center py-5" x-show="filteredCourses.length === 0 && !loading">
+                    <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                    <h4 class="text-muted">لا توجد نتائج</h4>
+                    <p class="text-muted">حاول تغيير كلمات البحث أو التصفية</p>
+                </div>
+                
+                <!-- Loading State -->
+                <div class="col-12 text-center py-5" x-show="loading">
+                    <div class="spinner-border text-danger" role="status">
+                        <span class="visually-hidden">جاري التحميل...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function courseCatalog() {
+    return {
+        courses: [],
+        filteredCourses: [],
+        searchQuery: '',
+        selectedCategory: '',
+        selectedDifficulty: '',
+        loading: true,
+        fuse: null,
+        
+        async init() {
+            await this.loadCourses();
+            this.initFuse();
+            this.filterCourses();
+            this.loading = false;
+        },
+        
+        async loadCourses() {
+            try {
+                const response = await fetch('/api/courses-data/');
+                this.courses = await response.json();
+            } catch (error) {
+                console.error('Error loading courses:', error);
+            }
+        },
+        
+        initFuse() {
+            const options = {
+                keys: ['title', 'short_description', 'category_name', 'instructor_name'],
+                threshold: 0.3,
+                includeScore: true
+            };
+            this.fuse = new Fuse(this.courses, options);
+        },
+        
+        performSearch() {
+            if (this.searchQuery.length > 0) {
+                const results = this.fuse.search(this.searchQuery);
+                this.filteredCourses = results.map(result => result.item);
+            } else {
+                this.filteredCourses = [...this.courses];
+            }
+            this.applyFilters();
+        },
+        
+        filterCourses() {
+            if (this.searchQuery.length > 0) {
+                this.performSearch();
+            } else {
+                this.filteredCourses = [...this.courses];
+                this.applyFilters();
+            }
+        },
+        
+        applyFilters() {
+            let filtered = [...this.filteredCourses];
+            
+            if (this.selectedCategory) {
+                filtered = filtered.filter(course => course.category_name === this.selectedCategory);
+            }
+            
+            if (this.selectedDifficulty) {
+                filtered = filtered.filter(course => course.difficulty === this.selectedDifficulty);
+            }
+            
+            this.filteredCourses = filtered;
+        },
+        
+        getDifficultyText(difficulty) {
+            const map = {
+                'beginner': 'مبتدئ',
+                'intermediate': 'متوسط',
+                'advanced': 'متقدم'
+            };
+            return map[difficulty] || difficulty;
+        }
+    }
+}
+</script>
+{% endblock %}

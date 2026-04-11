@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}ملفي الشخصي - رواق{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card shadow text-center">
+                <div class="card-body">
+                    {% if user.profile_picture %}
+                    <img src="{{ user.profile_picture.url }}" class="rounded-circle mb-3" width="150" height="150">
+                    {% else %}
+                    <i class="fas fa-user-circle fa-5x mb-3" style="color: var(--mit-red);"></i>
+                    {% endif %}
+                    <h4>{{ user.get_full_name|default:user.username }}</h4>
+                    <p class="text-muted">{{ user.get_role_display }}</p>
+                    <a href="{% url 'users:edit_profile' %}" class="btn btn-mit-red">تعديل الملف الشخصي</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h4>معلومات الحساب</h4>
+                    <hr>
+                    <p><strong>اسم المستخدم:</strong> {{ user.username }}</p>
+                    <p><strong>البريد الإلكتروني:</strong> {{ user.email }}</p>
+                    <p><strong>رقم الهاتف:</strong> {{ user.phone_number|default:"غير محدد" }}</p>
+                    <p><strong>تاريخ الانضمام:</strong> {{ user.date_joined|date:"d/m/Y" }}</p>
+                    {% if user.bio %}
+                    <p><strong>نبذة عني:</strong> {{ user.bio }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

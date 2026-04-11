@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block title %}تسجيل الدخول - رواق{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-body p-5">
+                    <h2 class="text-center mb-4">تسجيل الدخول</h2>
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label">اسم المستخدم</label>
+                            <input type="text" name="username" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">كلمة المرور</label>
+                            <input type="password" name="password" class="form-control" required>
+                        </div>
+                        <button type="submit" class="btn btn-mit-red w-100">تسجيل الدخول</button>
+                    </form>
+                    <hr>
+                    <p class="text-center mb-0">ليس لديك حساب؟ <a href="{% url 'users:register' %}">سجل الآن</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

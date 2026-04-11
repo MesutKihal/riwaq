@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block title %}تقدمي - رواق{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="mb-4">تقدمي التعليمي</h1>
+    
+    <!-- Overall Progress -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h5>التقدم الإجمالي</h5>
+            <div class="progress progress-mit" style="height: 30px;">
+                <div class="progress-bar" style="width: {{ total_progress }}%">{{ total_progress }}%</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Course Progress Cards -->
+    <div class="row g-4">
+        {% for enrollment in enrollments %}
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h5 class="mb-1">{{ enrollment.course.title }}</h5>
+                            <small class="text-muted">سجلت في {{ enrollment.enrolled_date|date:"d/m/Y" }}</small>
+                        </div>
+                        <span class="badge {% if enrollment.status == 'active' %}bg-primary{% else %}bg-success{% endif %}">
+                            {{ enrollment.get_status_display }}
+                        </span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="progress progress-mit">
+                            <div class="progress-bar" style="width: {{ enrollment.progress_percentage }}%"></div>
+                        </div>
+                        <div class="d-flex justify-content-between mt-1">
+                            <small class="text-muted">اكتمل {{ enrollment.progress_percentage }}%</small>
+                            <small class="text-muted">
+                                <i class="fas fa-check-circle text-success"></i> 
+                                {{ enrollment.lesson_progress.filter.is_completed.count }} / {{ enrollment.course.total_lessons }} درس
+                            </small>
+                        </div>
+                    </div>
+                    
+                    <a href="{% url 'courses:course_learn' enrollment.course.slug %}" class="btn btn-outline-mit-red w-100">
+                        <i class="fas fa-play"></i> متابعة التعلم
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <i class="fas fa-chart-line fa-4x text-muted mb-3"></i>
+            <h3>لا توجد بيانات تقدم</h3>
+            <p class="lead">سجل في دورة لمشاهدة تقدمك هنا</p>
+            <a href="{% url 'courses:course_catalog' %}" class="btn btn-mit-red btn-lg">استكشاف الدورات</a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+.btn-outline-mit-red {
+    border: 2px solid var(--mit-red);
+    color: var(--mit-red);
+    background: transparent;
+}
+.btn-outline-mit-red:hover {
+    background: var(--mit-red);
+    color: white;
+}
+</style>
+{% endblock %}

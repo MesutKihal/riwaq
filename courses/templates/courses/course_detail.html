@@ -1,0 +1,231 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ course.title }} - رواق{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Course Header -->
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'courses:home' %}">الرئيسية</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'courses:course_catalog' %}">الدورات</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'courses:category_courses' course.category.slug %}">{{ course.category.name }}</a></li>
+                    <li class="breadcrumb-item active">{{ course.title|truncatechars:50 }}</li>
+                </ol>
+            </nav>
+            
+            <h1 class="display-6 fw-bold mb-3">{{ course.title }}</h1>
+            <p class="lead">{{ course.short_description }}</p>
+            
+            <div class="d-flex flex-wrap gap-3 mb-3">
+                <span class="text-warning">
+                    <i class="fas fa-star"></i> {{ avg_rating }} ({{ total_reviews }} تقييم)
+                </span>
+                <span class="text-muted">
+                    <i class="fas fa-users"></i> {{ course.total_students }} طالب
+                </span>
+                <span class="text-muted">
+                    <i class="fas fa-clock"></i> {{ course.duration_weeks }} أسبوع
+                </span>
+                <span class="badge" style="background: var(--mit-red);">
+                    {{ course.get_difficulty_display }}
+                </span>
+            </div>
+            
+            <div class="d-flex align-items-center gap-2">
+                <img src="https://via.placeholder.com/40" class="rounded-circle" alt="{{ course.instructor.get_full_name }}">
+                <div>
+                    <small class="text-muted">مدرب الدورة</small>
+                    <div class="fw-bold">{{ course.instructor.get_full_name|default:course.instructor.username }}</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card shadow-sm">
+                {% if course.thumbnail %}
+                <img src="{{ course.thumbnail.url }}" class="card-img-top" alt="{{ course.title }}">
+                {% endif %}
+                <div class="card-body text-center">
+                    {% if course.price > 0 %}
+                    <h3 class="text-primary">{{ course.price }} دج</h3>
+                    {% else %}
+                    <h3 class="text-success">مجاني</h3>
+                    {% endif %}
+                    
+                    {% if is_enrolled %}
+                    <a href="{% url 'courses:course_learn' course.slug %}" class="btn btn-success w-100 mb-2">
+                        <i class="fas fa-play"></i> متابعة التعلم
+                    </a>
+                    <div class="progress progress-mit mb-2">
+                        <div class="progress-bar" style="width: {{ enrollment.progress_percentage }}%"></div>
+                    </div>
+                    <small class="text-muted">اكتمل {{ enrollment.progress_percentage }}%</small>
+                    {% else %}
+                    <a href="{% url 'courses:enroll_course' course.slug %}" class="btn btn-mit-red w-100">
+                        <i class="fas fa-graduation-cap"></i> سجل الآن
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Course Content Tabs -->
+    <div class="row">
+        <div class="col-lg-8">
+            <ul class="nav nav-tabs mb-4" id="courseTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab">نظرة عامة</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="curriculum-tab" data-bs-toggle="tab" data-bs-target="#curriculum" type="button" role="tab">المنهج الدراسي</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews" type="button" role="tab">التقييمات ({{ total_reviews }})</button>
+                </li>
+            </ul>
+            
+            <div class="tab-content">
+                <!-- Overview Tab -->
+                <div class="tab-pane fade show active" id="overview" role="tabpanel">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5>وصف الدورة</h5>
+                            <p>{{ course.description|linebreaks }}</p>
+                            
+                            <h5 class="mt-4">ماذا ستتعلم؟</h5>
+                            <ul class="list-unstyled">
+                                {% for module in modules %}
+                                <li><i class="fas fa-check-circle text-success me-2"></i> {{ module.title }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Curriculum Tab -->
+                <div class="tab-pane fade" id="curriculum" role="tabpanel">
+                    <div class="accordion" id="curriculumAccordion">
+                        {% for module in modules %}
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ forloop.counter }}">
+                                    <div>
+                                        <strong>{{ module.title }}</strong>
+                                        <small class="text-muted d-block">{{ module.lessons.count }} دروس</small>
+                                    </div>
+                                </button>
+                            </h2>
+                            <div id="collapse{{ forloop.counter }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" data-bs-parent="#curriculumAccordion">
+                                <div class="accordion-body p-0">
+                                    <ul class="list-group list-group-flush">
+                                        {% for lesson in module.lessons.all %}
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <div>
+                                                {% if lesson.lesson_type == 'video' %}
+                                                <i class="fas fa-video text-danger me-2"></i>
+                                                {% elif lesson.lesson_type == 'text' %}
+                                                <i class="fas fa-file-alt text-primary me-2"></i>
+                                                {% elif lesson.lesson_type == 'quiz' %}
+                                                <i class="fas fa-question-circle text-warning me-2"></i>
+                                                {% else %}
+                                                <i class="fas fa-file-pdf text-danger me-2"></i>
+                                                {% endif %}
+                                                {{ lesson.title }}
+                                                {% if lesson.is_free_preview %}
+                                                <span class="badge bg-info ms-2">معاينة مجانية</span>
+                                                {% endif %}
+                                            </div>
+                                            <span class="badge bg-secondary">{{ lesson.duration_minutes }} دقيقة</span>
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- Reviews Tab -->
+                <div class="tab-pane fade" id="reviews" role="tabpanel">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card text-center">
+                                <div class="card-body">
+                                    <div class="display-1 fw-bold">{{ avg_rating }}</div>
+                                    <div class="text-warning mb-2">
+                                        {% for i in "12345"|make_list %}
+                                        {% if forloop.counter <= avg_rating %}
+                                        <i class="fas fa-star"></i>
+                                        {% else %}
+                                        <i class="far fa-star"></i>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                    <p class="text-muted">بناءً على {{ total_reviews }} تقييم</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            {% for review in reviews %}
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <div>
+                                            <strong>{{ review.student.get_full_name|default:review.student.username }}</strong>
+                                            <div class="text-warning small">
+                                                {% for i in "12345"|make_list %}
+                                                {% if forloop.counter <= review.rating %}
+                                                <i class="fas fa-star"></i>
+                                                {% else %}
+                                                <i class="far fa-star"></i>
+                                                {% endif %}
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                        <small class="text-muted">{{ review.created_at|date:"d/m/Y" }}</small>
+                                    </div>
+                                    <p>{{ review.comment }}</p>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <p class="text-muted text-center">لا توجد تقييمات بعد</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sidebar Info -->
+        <div class="col-lg-4">
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5>متطلبات الدورة</h5>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-laptop me-2"></i> حاسوب متصل بالإنترنت</li>
+                        <li><i class="fas fa-clock me-2"></i> {{ course.duration_weeks }} أسابيع بمعدل 3-5 ساعات أسبوعياً</li>
+                        <li><i class="fas fa-language me-2"></i> اللغة: {{ course.language }}</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-body">
+                    <h5>مشاركة الدورة</h5>
+                    <div class="d-flex gap-2">
+                        <a href="#" class="btn btn-outline-primary btn-sm"><i class="fab fa-facebook"></i></a>
+                        <a href="#" class="btn btn-outline-info btn-sm"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="btn btn-outline-success btn-sm"><i class="fab fa-whatsapp"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

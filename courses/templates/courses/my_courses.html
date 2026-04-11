@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block title %}دوراتي - رواق{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="mb-4">دوراتي</h1>
+    
+    <div class="row g-4">
+        {% for enrollment in enrollments %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card course-card h-100">
+                <img src="{{ enrollment.course.thumbnail.url|default:'https://via.placeholder.com/300x200' }}" class="card-img-top" alt="{{ enrollment.course.title }}" style="height: 200px; object-fit: cover;">
+                <div class="card-body">
+                    <span class="badge bg-secondary mb-2">{{ enrollment.course.category.name }}</span>
+                    <h5 class="card-title">{{ enrollment.course.title }}</h5>
+                    <div class="mb-2">
+                        <div class="progress progress-mit">
+                            <div class="progress-bar" style="width: {{ enrollment.progress_percentage }}%"></div>
+                        </div>
+                        <small class="text-muted">اكتمل {{ enrollment.progress_percentage }}%</small>
+                    </div>
+                    <p class="card-text text-muted small">{{ enrollment.course.short_description|truncatechars:80 }}</p>
+                </div>
+                <div class="card-footer bg-transparent border-0 pb-3">
+                    <a href="{% url 'courses:course_learn' enrollment.course.slug %}" class="btn btn-mit-red w-100">
+                        {% if enrollment.progress_percentage > 0 %}
+                        <i class="fas fa-play"></i> متابعة التعلم
+                        {% else %}
+                        <i class="fas fa-graduation-cap"></i> ابدأ التعلم
+                        {% endif %}
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <i class="fas fa-book-open fa-4x text-muted mb-3"></i>
+            <h3>لم تسجل في أي دورة بعد</h3>
+            <p class="lead">استكشف دوراتنا وابدأ رحلة التعلم اليوم</p>
+            <a href="{% url 'courses:course_catalog' %}" class="btn btn-mit-red btn-lg">استكشاف الدورات</a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

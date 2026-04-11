@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ category.name }} - رواق{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'courses:home' %}">الرئيسية</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'courses:course_catalog' %}">الدورات</a></li>
+            <li class="breadcrumb-item active">{{ category.name }}</li>
+        </ol>
+    </nav>
+    
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1><i class="fas {{ category.icon }} me-2" style="color: var(--mit-red);"></i> {{ category.name }}</h1>
+            <p class="text-muted">{{ category.description }}</p>
+        </div>
+    </div>
+    
+    <div class="row g-4">
+        {% for course in courses %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card course-card h-100">
+                <img src="{{ course.thumbnail.url|default:'https://via.placeholder.com/300x200' }}" class="card-img-top" alt="{{ course.title }}" style="height: 200px; object-fit: cover;">
+                <div class="card-body">
+                    <h5 class="card-title">{{ course.title }}</h5>
+                    <p class="card-text text-muted small">{{ course.short_description|truncatechars:80 }}</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-warning">
+                            <i class="fas fa-star"></i> {{ course.rating|default:"0.0" }}
+                        </span>
+                        <span class="text-muted small">
+                            <i class="fas fa-users"></i> {{ course.total_students }}
+                        </span>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-0 pb-3">
+                    <a href="{% url 'courses:course_detail' course.slug %}" class="btn btn-mit-red w-100">تفاصيل الدورة</a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <i class="fas fa-folder-open fa-4x text-muted mb-3"></i>
+            <h4>لا توجد دورات في هذا التصنيف</h4>
+            <a href="{% url 'courses:course_catalog' %}" class="btn btn-mit-red">استكشاف جميع الدورات</a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

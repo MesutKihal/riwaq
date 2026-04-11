@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ course.title }} - التعلم{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <!-- Sidebar - Course Content -->
+        <div class="col-lg-3">
+            <div class="card shadow-sm sticky-top" style="top: 80px;">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">{{ course.title }}</h5>
+                    <div class="progress progress-mit mt-2">
+                        <div class="progress-bar" style="width: {{ enrollment.progress_percentage }}%"></div>
+                    </div>
+                    <small class="text-muted">اكتمل {{ enrollment.progress_percentage }}%</small>
+                </div>
+                <div class="card-body p-0" style="max-height: 70vh; overflow-y: auto;">
+                    <div class="accordion" id="courseModules">
+                        {% for module in modules %}
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#module{{ module.id }}">
+                                    <div>
+                                        <strong>{{ module.title }}</strong>
+                                        <small class="text-muted d-block">{{ module.lessons.count }} دروس</small>
+                                    </div>
+                                </button>
+                            </h2>
+                            <div id="module{{ module.id }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" data-bs-parent="#courseModules">
+                                <div class="accordion-body p-0">
+                                    <ul class="list-group list-group-flush">
+                                        {% for lesson in module.lessons.all %}
+                                        <li class="list-group-item">
+                                            <a href="{% url 'courses:lesson_view' course.slug lesson.id %}" class="text-decoration-none d-flex align-items-center">
+                                                {% if lesson.id in completed_lessons %}
+                                                <i class="fas fa-check-circle text-success me-2"></i>
+                                                {% else %}
+                                                <i class="fas fa-circle-notch text-muted me-2"></i>
+                                                {% endif %}
+                                                <span>{{ lesson.title }}</span>
+                                                <small class="text-muted ms-auto">{{ lesson.duration_minutes }} دقيقة</small>
+                                            </a>
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content Area -->
+        <div class="col-lg-9">
+            <div class="card shadow-sm">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-play-circle fa-5x mb-3" style="color: var(--mit-red);"></i>
+                    <h3>مرحباً بك في {{ course.title }}</h3>
+                    <p class="lead">اختر درساً من القائمة الجانبية لبدء التعلم</p>
+                    {% if first_lesson %}
+                    <a href="{% url 'courses:lesson_view' course.slug first_lesson.id %}" class="btn btn-mit-red btn-lg">
+                        <i class="fas fa-play"></i> ابدأ التعلم الآن
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

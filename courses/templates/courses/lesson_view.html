@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ lesson.title }} - {{ course.title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-lg-3">
+            <div class="card shadow-sm sticky-top" style="top: 80px;">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0">{{ course.title }}</h6>
+                    <div class="progress progress-mit mt-2">
+                        <div class="progress-bar" style="width: {{ enrollment.progress_percentage }}%"></div>
+                    </div>
+                </div>
+                <div class="card-body p-0" style="max-height: 70vh; overflow-y: auto;">
+                    <div class="accordion" id="courseModules">
+                        {% for module in course.modules.all %}
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#module{{ module.id }}">
+                                    <small><strong>{{ module.title }}</strong></small>
+                                </button>
+                            </h2>
+                            <div id="module{{ module.id }}" class="accordion-collapse collapse" data-bs-parent="#courseModules">
+                                <div class="accordion-body p-0">
+                                    <ul class="list-group list-group-flush">
+                                        {% for l in module.lessons.all %}
+                                        <li class="list-group-item {% if l.id == lesson.id %}active bg-light{% endif %}">
+                                            <a href="{% url 'courses:lesson_view' course.slug l.id %}" class="text-decoration-none d-flex align-items-center">
+                                                {% if l.id in enrollment.lesson_progress.values_list 'lesson_id' flat=True %}
+                                                <i class="fas fa-check-circle text-success me-2 small"></i>
+                                                {% else %}
+                                                <i class="fas fa-play-circle me-2 small" style="color: var(--mit-red);"></i>
+                                                {% endif %}
+                                                <small>{{ l.title|truncatechars:30 }}</small>
+                                            </a>
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Lesson Content -->
+        <div class="col-lg-9">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">{{ lesson.title }}</h4>
+                    <button class="btn btn-success btn-sm" id="markCompleteBtn" {% if progress.is_completed %}disabled{% endif %}>
+                        {% if progress.is_completed %}
+                        <i class="fas fa-check"></i> مكتمل
+                        {% else %}
+                        <i class="fas fa-check-circle"></i> وضع إكمال
+                        {% endif %}
+                    </button>
+                </div>
+                <div class="card-body">
+                    {% if lesson.lesson_type == 'video' %}
+                    <!-- Video Player -->
+                    <div class="ratio ratio-16x9">
+                        <video controls class="w-100" id="videoPlayer">
+                            <source src="{{ lesson.video_file.url }}" type="video/mp4">
+                            متصفحك لا يدعم تشغيل الفيديو
+                        </video>
+                    </div>
+                    
+                    {% elif lesson.lesson_type == 'pdf' %}
+                    <!-- PDF Viewer -->
+                    <div class="ratio ratio-1x1" style="min-height: 600px;">
+                        <embed src="{{ lesson.pdf_file.url }}" type="application/pdf" width="100%" height="100%">
+                    </div>
+                    
+                    {% elif lesson.lesson_type == 'text' %}
+                    <!-- Text Content -->
+                    <div class="lesson-content">
+                        {{ lesson.text_content|linebreaks }}
+                    </div>
+                    
+                    {% endif %}
+                </div>
+                <div class="card-footer bg-white">
+                    <div class="d-flex justify-content-between">
+                        {% if prev_lesson %}
+                        <a href="{% url 'courses:lesson_view' course.slug prev_lesson.id %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-right"></i> الدرس السابق
+                        </a>
+                        {% else %}
+                        <div></div>
+                        {% endif %}
+                        
+                        {% if next_lesson %}
+                        <a href="{% url 'courses:lesson_view' course.slug next_lesson.id %}" class="btn btn-mit-red" id="nextLessonBtn">
+                            الدرس التالي <i class="fas fa-arrow-left"></i>
+                        </a>
+                        {% else %}
+                        <a href="{% url 'courses:course_learn' course.slug %}" class="btn btn-success">
+                            <i class="fas fa-trophy"></i> أكملت الدورة!
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('markCompleteBtn')?.addEventListener('click', function() {
+    fetch('{% url "courses:mark_lesson_complete" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({
+            lesson_id: {{ lesson.id }}
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        }
+    });
+});
+
+// Save video progress
+const videoPlayer = document.getElementById('videoPlayer');
+if (videoPlayer) {
+    let saveTimeout;
+    videoPlayer.addEventListener('timeupdate', function() {
+        clearTimeout(saveTimeout);
+        saveTimeout = setTimeout(() => {
+            const position = Math.floor(videoPlayer.currentTime);
+            // You can implement saving video position to backend here
+            console.log('Video position:', position);
+        }, 3000);
+    });
+}
+</script>
+{% endblock %}
