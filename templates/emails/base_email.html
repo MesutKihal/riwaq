@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}رواق{% endblock %}</title>
+    <style>
+        body {
+            font-family: 'Noto Kufi Arabic', 'Segoe UI', Tahoma, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f7fa;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, #7d0f2a 0%, #800020 100%);
+            padding: 30px;
+            text-align: center;
+            border-radius: 24px 24px 0 0;
+        }
+        .header h1 {
+            color: white;
+            margin: 0;
+            font-size: 28px;
+        }
+        .content {
+            background: white;
+            padding: 40px;
+            border-radius: 0 0 24px 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 32px;
+            background: linear-gradient(135deg, #7d0f2a 0%, #800020 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 12px;
+            color: #888;
+        }
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #7d0f2a, transparent);
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>رواق</h1>
+            <p style="color: rgba(255,255,255,0.9); margin-top: 10px;">منصة التعلم الجزائرية</p>
+        </div>
+        <div class="content">
+            {% block content %}{% endblock %}
+        </div>
+        <div class="footer">
+            <p>© 2024 رواق - جميع الحقوق محفوظة</p>
+            <p>
+                <small>هذا بريد إلكتروني آلي، الرجاء عدم الرد عليه</small>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

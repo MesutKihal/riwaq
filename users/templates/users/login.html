@@ -3,6 +3,7 @@
 {% block title %}تسجيل الدخول - رواق{% endblock %}
 
 {% block content %}
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 <div class="container py-5">
     <div class="row justify-content-center">
         <div class="col-md-6">
@@ -19,6 +20,7 @@
                             <label class="form-label">كلمة المرور</label>
                             <input type="password" name="password" class="form-control" required>
                         </div>
+                        <div class="cf-turnstile" data-sitekey="{{ turnstile_site_key }}" data-theme="light"></div>
                         <button type="submit" class="btn btn-mit-red w-100">تسجيل الدخول</button>
                     </form>
                     <hr>

@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - {{ module.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header bg-white">
+                    <h4 class="mb-0">{{ title }}</h4>
+                    <small class="text-muted">الدورة: {{ module.course.title }} | الوحدة: {{ module.title }}</small>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        {% for field in form %}
+                        <div class="mb-3">
+                            <label class="form-label">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.help_text %}
+                            <small class="form-text text-muted">{{ field.help_text }}</small>
+                            {% endif %}
+                            {% if field.errors %}
+                            <div class="alert alert-danger mt-1">
+                                {{ field.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                        
+                        <div class="d-flex justify-content-between">
+                            <button type="submit" class="btn btn-mit-red">
+                                <i class="fas fa-save"></i> حفظ
+                            </button>
+                            <a href="{% url 'courses:course_edit' module.course.slug %}" class="btn btn-secondary">
+                                إلغاء
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Show/hide fields based on lesson type
+document.addEventListener('DOMContentLoaded', function() {
+    const lessonType = document.getElementById('lesson_type');
+    const videoFileGroup = document.querySelector('.field-video_file, .field-video_url');
+    const textContentGroup = document.querySelector('.field-text_content');
+    const pdfFileGroup = document.querySelector('.field-pdf_file');
+    
+    function toggleFields() {
+        const type = lessonType.value;
+        
+        // Hide all
+        if (videoFileGroup) videoFileGroup.closest('.mb-3').style.display = 'none';
+        if (textContentGroup) textContentGroup.closest('.mb-3').style.display = 'none';
+        if (pdfFileGroup) pdfFileGroup.closest('.mb-3').style.display = 'none';
+        
+        // Show based on type
+        if (type === 'video') {
+            if (videoFileGroup) videoFileGroup.closest('.mb-3').style.display = 'block';
+        } else if (type === 'text') {
+            if (textContentGroup) textContentGroup.closest('.mb-3').style.display = 'block';
+        } else if (type === 'pdf') {
+            if (pdfFileGroup) pdfFileGroup.closest('.mb-3').style.display = 'block';
+        }
+    }
+    
+    if (lessonType) {
+        lessonType.addEventListener('change', toggleFields);
+        toggleFields();
+    }
+});
+</script>
+{% endblock %}

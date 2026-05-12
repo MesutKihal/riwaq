@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% block title %}الدفع - {{ course.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-white">
+                    <h4 class="mb-0">إتمام عملية الدفع</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Course Summary -->
+                    <div class="row mb-4">
+                        <div class="col-md-8">
+                            <h5>{{ course.title }}</h5>
+                            <p class="text-muted">{{ course.short_description }}</p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <h3 class="text-success">{{ course.price }} DZD</h3>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <!-- Payment Form -->
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <h5 class="mb-3">اختر طريقة الدفع</h5>
+                        
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <div class="card border payment-method" data-method="edahabia">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-credit-card fa-3x mb-2" style="color: #1a73e8;"></i>
+                                        <h6>EDAHABIA</h6>
+                                        <small class="text-muted">بطاقة الذهبية - بريد الجزائر</small>
+                                        <div class="form-check mt-2">
+                                            <input class="form-check-input" type="radio" name="payment_method" 
+                                                   value="edahabia" id="edahabia" required>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="card border payment-method" data-method="cib">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-credit-card fa-3x mb-2" style="color: #e31b23;"></i>
+                                        <h6>CIB</h6>
+                                        <small class="text-muted">بطاقة سيب - SATIM</small>
+                                        <div class="form-check mt-2">
+                                            <input class="form-check-input" type="radio" name="payment_method" 
+                                                   value="cib" id="cib" required>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <i class="fas fa-shield-alt"></i>
+                            <small>عملية الدفع مشفرة وآمنة. سيتم تحويلك إلى بوابة الدفع الآمنة لإتمام العملية.</small>
+                        </div>
+                        
+                        <div class="d-flex gap-3">
+                            <button type="submit" class="btn btn-mit-red flex-grow-1">
+                                <i class="fas fa-lock"></i> دفع {{ course.price }} DZD
+                            </button>
+                            <a href="{% url 'courses:course_detail' course.slug %}" class="btn btn-secondary">
+                                إلغاء
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.payment-method {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.payment-method:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.payment-method.selected {
+    border: 2px solid var(--mit-red);
+    background-color: #fff5f5;
+}
+</style>
+
+<script>
+// Payment method selection styling
+document.querySelectorAll('.payment-method').forEach(method => {
+    method.addEventListener('click', function() {
+        const radio = this.querySelector('input[type="radio"]');
+        radio.checked = true;
+        
+        // Update visual selection
+        document.querySelectorAll('.payment-method').forEach(m => {
+            m.classList.remove('selected');
+        });
+        this.classList.add('selected');
+    });
+});
+</script>
+{% endblock %}

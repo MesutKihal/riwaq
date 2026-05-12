@@ -1,0 +1,29 @@
+{% extends 'emails/base_email.html' %}
+
+{% block title %}مرحباً بك في رواق{% endblock %}
+
+{% block content %}
+<h2 style="color: #7d0f2a;">مرحباً {{ user.get_full_name|default:user.username }}! 👋</h2>
+
+<p>نحن سعداء بانضمامك إلى مجتمع رواق التعليمي.</p>
+
+<p>رواق هو منصتك المثالية لتعلم مهارات جديدة وتطوير مسيرتك المهنية. نحن نقدم:</p>
+
+<ul>
+    <li>✅ دورات عالية الجودة في مختلف المجالات</li>
+    <li>✅ مدربين محترفين وخبراء</li>
+    <li>✅ شهادات معتمدة عند الإكمال</li>
+    <li>✅ دعم فني على مدار الساعة</li>
+</ul>
+
+<div class="divider"></div>
+
+<h3>ابدأ رحلتك التعليمية الآن</h3>
+<p>استكشف مكتبة الدورات واختر ما يناسب اهتماماتك</p>
+
+<a href="{{ course_catalog_url }}" class="button">استكشف الدورات</a>
+
+<p style="margin-top: 20px;">
+    <small>إذا كان لديك أي استفسار، فلا تتردد في <a href="{{ support_url }}">التواصل معنا</a></small>
+</p>
+{% endblock %}

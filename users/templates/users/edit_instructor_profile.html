@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}المعلومات المهنية - رواق{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="neumorphic-card p-4">
+                <h2 class="mb-4">المعلومات المهنية</h2>
+                <p class="text-muted mb-4">هذه المعلومات ستظهر في ملفك الشخصي كمدرب</p>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    {% for field in form %}
+                    <div class="mb-3">
+                        <label class="form-label">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.help_text %}
+                        <small class="form-text text-muted">{{ field.help_text }}</small>
+                        {% endif %}
+                        {% if field.errors %}
+                        <div class="text-danger small">{{ field.errors }}</div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                    
+                    <div class="d-flex gap-3">
+                        <button type="submit" class="btn btn-mit-red rounded-pill px-4">
+                            <i class="fas fa-save"></i> حفظ
+                        </button>
+                        <a href="{% url 'users:profile' %}" class="btn btn-secondary rounded-pill px-4">
+                            إلغاء
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

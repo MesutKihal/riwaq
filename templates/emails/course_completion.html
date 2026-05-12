@@ -1,0 +1,37 @@
+{% extends 'emails/base_email.html' %}
+
+{% block title %}تهانينا! أكملت دورة {{ course.title }}{% endblock %}
+
+{% block content %}
+<h2 style="color: #7d0f2a;">🎉 تهانينا! 🎉</h2>
+
+<p>مبارك <strong>{{ student_name }}</strong>!</p>
+
+<p>لقد أكملت بنجاح دورة <strong>{{ course.title }}</strong> في رواق.</p>
+
+<div style="text-align: center; margin: 30px 0;">
+    <div style="font-size: 48px;">🏆</div>
+    <div style="font-size: 24px; font-weight: bold; color: #7d0f2a;">{{ completion_percentage }}%</div>
+    <div>نسبة الإكمال</div>
+</div>
+
+<p>لقد أظهرت التزاماً رائعاً بتطوير مهاراتك. نحن فخورون بإنجازك!</p>
+
+<h3>ماذا بعد؟</h3>
+<ul>
+    <li>📜 <strong>احصل على شهادتك</strong> - قم بتحميل شهادة الإتمام من حسابك</li>
+    <li>🌟 <strong>قيّم الدورة</strong> - شارك تجربتك لمساعدة الطلاب الآخرين</li>
+    <li>📚 <strong>استكشف دورات جديدة</strong> - واصل رحلة التعلم</li>
+</ul>
+
+<a href="{{ certificate_url }}" class="button">تحميل الشهادة</a>
+<a href="{{ course_catalog_url }}" class="button" style="background: #6c757d;">دورات أخرى</a>
+
+<div class="divider"></div>
+
+<p>
+    <small>شارك إنجازك مع أصدقائك! <br>
+    <a href="{{ share_url }}">مشاركة على فيسبوك</a> | 
+    <a href="{{ share_url }}">مشاركة على تويتر</a></small>
+</p>
+{% endblock %}

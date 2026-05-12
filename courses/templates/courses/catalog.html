@@ -4,89 +4,81 @@
 {% block title %}جميع الدورات - رواق{% endblock %}
 
 {% block content %}
-<div class="container py-5" x-data="courseCatalog()" x-init="init()">
+<div class="container py-5">
     <div class="row">
         <!-- Sidebar Filters -->
         <div class="col-lg-3 mb-4">
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title mb-3">البحث والتصفية</h5>
-                    
-                    <!-- Search Box -->
-                    <div class="mb-4">
-                        <label class="form-label">بحث</label>
-                        <input type="text" class="form-control" x-model="searchQuery" @input="performSearch" placeholder="ابحث عن دورة...">
-                    </div>
-                    
-                    <!-- Category Filter -->
-                    <div class="mb-4">
-                        <label class="form-label">التصنيف</label>
-                        <select class="form-select" x-model="selectedCategory" @change="filterCourses">
-                            <option value="">جميع التصنيفات</option>
-                            {% for category in categories %}
-                            <option value="{{ category.name }}">{{ category.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    
-                    <!-- Difficulty Filter -->
-                    <div class="mb-4">
-                        <label class="form-label">المستوى</label>
-                        <select class="form-select" x-model="selectedDifficulty" @change="filterCourses">
-                            <option value="">جميع المستويات</option>
-                            <option value="beginner">مبتدئ</option>
-                            <option value="intermediate">متوسط</option>
-                            <option value="advanced">متقدم</option>
-                        </select>
-                    </div>
-                    
-                    <!-- Results Count -->
-                    <div class="alert alert-info" x-show="filteredCourses.length > 0">
-                        <i class="fas fa-search"></i> <span x-text="filteredCourses.length"></span> دورة
+            <div class="filter-sidebar">
+                <div class="card border-0 shadow-sm rounded-4">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-3">بحث وتصفية</h5>
+                        
+                        <!-- Search Box -->
+                        <div class="mb-4">
+                            <input type="text" 
+                                   id="searchInput"
+                                   class="form-control rounded-pill border-0 bg-light" 
+                                   placeholder="ابحث عن دورة...">
+                        </div>
+                        
+                        <!-- Category Filter -->
+                        <div class="mb-4">
+                            <label class="fw-bold mb-2 d-block">التصنيف</label>
+                            <select id="categoryFilter" class="form-select rounded-pill border-0 bg-light">
+                                <option value="">جميع التصنيفات</option>
+                                {% for category in categories %}
+                                <option value="{{ category.name }}">{{ category.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <!-- Difficulty Filter -->
+                        <div class="mb-4">
+                            <label class="fw-bold mb-2 d-block">المستوى</label>
+                            <select id="difficultyFilter" class="form-select rounded-pill border-0 bg-light">
+                                <option value="">جميع المستويات</option>
+                                <option value="beginner">مبتدئ</option>
+                                <option value="intermediate">متوسط</option>
+                                <option value="advanced">متقدم</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Price Filter -->
+                        <div class="mb-4">
+                            <label class="fw-bold mb-2 d-block">السعر</label>
+                            <div class="d-flex gap-2">
+                                <input type="number" id="minPrice" class="form-control rounded-pill border-0 bg-light" placeholder="الحد الأدنى" value="0">
+                                <input type="number" id="maxPrice" class="form-control rounded-pill border-0 bg-light" placeholder="الحد الأعلى" value="50000">
+                            </div>
+                        </div>
+                        
+                        <!-- Reset Button -->
+                        <button id="resetFilters" class="btn btn-outline-secondary rounded-pill w-100">
+                            إعادة تعيين
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
-        
-        <!-- Course Grid -->
+        <!-- Results -->
         <div class="col-lg-9">
-            <div class="row g-4">
-                <template x-for="course in filteredCourses" :key="course.id">
-                    <div class="col-md-6 col-lg-4">
-                        <div class="card course-card h-100">
-                            <img :src="course.thumbnail_url || 'https://via.placeholder.com/300x200'" class="card-img-top" :alt="course.title" style="height: 180px; object-fit: cover;">
-                            <div class="card-body">
-                                <span class="badge bg-secondary mb-2" x-text="course.category_name"></span>
-                                <h5 class="card-title" x-text="course.title"></h5>
-                                <p class="card-text text-muted small" x-text="course.short_description?.substring(0, 80) + '...'"></p>
-                                <div class="d-flex justify-content-between align-items-center mt-3">
-                                    <span class="text-muted small">
-                                        <i class="fas fa-chalkboard-user"></i> <span x-text="course.instructor_name"></span>
-                                    </span>
-                                    <span class="badge" :class="{
-                                        'bg-success': course.difficulty === 'beginner',
-                                        'bg-warning': course.difficulty === 'intermediate',
-                                        'bg-danger': course.difficulty === 'advanced'
-                                    }" x-text="getDifficultyText(course.difficulty)"></span>
-                                </div>
-                            </div>
-                            <div class="card-footer bg-transparent border-0 pb-3">
-                                <a :href="`/course/${course.slug}/`" class="btn btn-mit-red w-100">تفاصيل الدورة</a>
-                            </div>
-                        </div>
-                    </div>
-                </template>
-                
-                <!-- No Results -->
-                <div class="col-12 text-center py-5" x-show="filteredCourses.length === 0 && !loading">
-                    <i class="fas fa-search fa-3x text-muted mb-3"></i>
-                    <h4 class="text-muted">لا توجد نتائج</h4>
-                    <p class="text-muted">حاول تغيير كلمات البحث أو التصفية</p>
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <span id="resultsCount" class="text-muted">0 دورة</span>
                 </div>
-                
-                <!-- Loading State -->
-                <div class="col-12 text-center py-5" x-show="loading">
-                    <div class="spinner-border text-danger" role="status">
+                <select id="sortBy" class="form-select w-auto rounded-pill border-0 bg-light">
+                    <option value="newest">الأحدث</option>
+                    <option value="popular">الأكثر تسجيلاً</option>
+                    <option value="price_low">السعر: من الأقل للأعلى</option>
+                    <option value="price_high">السعر: من الأعلى للأقل</option>
+                    <option value="name">الاسم</option>
+                </select>
+            </div>
+            
+            <div id="coursesContainer" class="row g-4">
+                <!-- Courses will be loaded here -->
+                <div class="col-12 text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
                         <span class="visually-hidden">جاري التحميل...</span>
                     </div>
                 </div>
@@ -96,83 +88,231 @@
 </div>
 
 <script>
-function courseCatalog() {
-    return {
-        courses: [],
-        filteredCourses: [],
-        searchQuery: '',
-        selectedCategory: '',
-        selectedDifficulty: '',
-        loading: true,
-        fuse: null,
+// Course data
+let allCourses = [];
+let fuse = null;
+
+// DOM Elements
+const searchInput = document.getElementById('searchInput');
+const categoryFilter = document.getElementById('categoryFilter');
+const difficultyFilter = document.getElementById('difficultyFilter');
+const minPriceInput = document.getElementById('minPrice');
+const maxPriceInput = document.getElementById('maxPrice');
+const sortSelect = document.getElementById('sortBy');
+const resetBtn = document.getElementById('resetFilters');
+const coursesContainer = document.getElementById('coursesContainer');
+const resultsCount = document.getElementById('resultsCount');
+
+// Load courses on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadCourses();
+    
+    // Add event listeners
+    searchInput.addEventListener('input', debounce(applyFilters, 300));
+    categoryFilter.addEventListener('change', applyFilters);
+    difficultyFilter.addEventListener('change', applyFilters);
+    minPriceInput.addEventListener('input', debounce(applyFilters, 300));
+    maxPriceInput.addEventListener('input', debounce(applyFilters, 300));
+    sortSelect.addEventListener('change', applyFilters);
+    resetBtn.addEventListener('click', resetAllFilters);
+});
+
+async function loadCourses() {
+    try {
+        const response = await fetch('/api/courses-data/');
+        allCourses = await response.json();
         
-        async init() {
-            await this.loadCourses();
-            this.initFuse();
-            this.filterCourses();
-            this.loading = false;
-        },
+        // Initialize Fuse.js for fuzzy search
+        fuse = new Fuse(allCourses, {
+            keys: [
+                { name: 'title', weight: 2 },           // Title has highest priority
+                { name: 'category_name', weight: 1.5 }, // Category next
+                { name: 'instructor_name', weight: 1 }, // Instructor name
+                { name: 'short_description', weight: 0.5 } // Description lowest
+            ],
+            threshold: 0.3,
+            includeScore: true,
+            ignoreLocation: true  // Search anywhere in text, not just beginning
+        });
         
-        async loadCourses() {
-            try {
-                const response = await fetch('/api/courses-data/');
-                this.courses = await response.json();
-            } catch (error) {
-                console.error('Error loading courses:', error);
-            }
-        },
-        
-        initFuse() {
-            const options = {
-                keys: ['title', 'short_description', 'category_name', 'instructor_name'],
-                threshold: 0.3,
-                includeScore: true
-            };
-            this.fuse = new Fuse(this.courses, options);
-        },
-        
-        performSearch() {
-            if (this.searchQuery.length > 0) {
-                const results = this.fuse.search(this.searchQuery);
-                this.filteredCourses = results.map(result => result.item);
-            } else {
-                this.filteredCourses = [...this.courses];
-            }
-            this.applyFilters();
-        },
-        
-        filterCourses() {
-            if (this.searchQuery.length > 0) {
-                this.performSearch();
-            } else {
-                this.filteredCourses = [...this.courses];
-                this.applyFilters();
-            }
-        },
-        
-        applyFilters() {
-            let filtered = [...this.filteredCourses];
-            
-            if (this.selectedCategory) {
-                filtered = filtered.filter(course => course.category_name === this.selectedCategory);
-            }
-            
-            if (this.selectedDifficulty) {
-                filtered = filtered.filter(course => course.difficulty === this.selectedDifficulty);
-            }
-            
-            this.filteredCourses = filtered;
-        },
-        
-        getDifficultyText(difficulty) {
-            const map = {
-                'beginner': 'مبتدئ',
-                'intermediate': 'متوسط',
-                'advanced': 'متقدم'
-            };
-            return map[difficulty] || difficulty;
-        }
+        applyFilters();
+    } catch (error) {
+        console.error('Error loading courses:', error);
+        coursesContainer.innerHTML = '<div class="col-12 text-center py-5"><p class="text-danger">حدث خطأ في تحميل الدورات</p></div>';
     }
 }
+
+function applyFilters() {
+    let filtered = [...allCourses];
+    
+    // Search filter (Fuse.js)
+    const searchTerm = searchInput.value.trim();
+    if (searchTerm !== '') {
+        const searchResults = fuse.search(searchTerm);
+        filtered = searchResults.map(result => result.item);
+    }
+    
+    // Category filter
+    const selectedCategory = categoryFilter.value;
+    if (selectedCategory !== '') {
+        filtered = filtered.filter(course => course.category_name === selectedCategory);
+    }
+    
+    // Difficulty filter
+    const selectedDifficulty = difficultyFilter.value;
+    if (selectedDifficulty !== '') {
+        filtered = filtered.filter(course => course.difficulty === selectedDifficulty);
+    }
+    
+    // Price filter
+    const minPrice = parseInt(minPriceInput.value) || 0;
+    const maxPrice = parseInt(maxPriceInput.value) || 50000;
+    filtered = filtered.filter(course => course.price >= minPrice && course.price <= maxPrice);
+    
+    // Sort
+    filtered = sortCourses(filtered);
+    
+    // Update UI
+    displayCourses(filtered);
+    resultsCount.textContent = filtered.length + ' دورة';
+}
+
+function sortCourses(courses) {
+    const sortBy = sortSelect.value;
+    const sorted = [...courses];
+    
+    switch(sortBy) {
+        case 'newest':
+            sorted.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            break;
+        case 'popular':
+            sorted.sort((a, b) => (b.total_students || 0) - (a.total_students || 0));
+            break;
+        case 'price_low':
+            sorted.sort((a, b) => (a.price || 0) - (b.price || 0));
+            break;
+        case 'price_high':
+            sorted.sort((a, b) => (b.price || 0) - (a.price || 0));
+            break;
+        case 'name':
+            sorted.sort((a, b) => a.title.localeCompare(b.title));
+            break;
+        default:
+            break;
+    }
+    
+    return sorted;
+}
+
+function displayCourses(courses) {
+    if (courses.length === 0) {
+        coursesContainer.innerHTML = `
+            <div class="col-12 text-center py-5">
+                <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">لا توجد نتائج</h5>
+                <p class="text-muted">حاول تغيير خيارات البحث</p>
+            </div>
+        `;
+        return;
+    }
+    
+    let html = '';
+    for (const course of courses) {
+        const thumbnail = course.thumbnail_url || 'https://via.placeholder.com/400x250';
+        const priceDisplay = course.price > 0 ? course.price + ' DZD' : 'مجاني';
+        const ratingDisplay = course.rating || 'جديد';
+        const difficultyClass = getDifficultyClass(course.difficulty);
+        const difficultyText = getDifficultyText(course.difficulty);
+        
+        html += `
+            <div class="col-md-6 col-lg-4">
+                <div class="card border-0 shadow-sm rounded-4 h-100">
+                    <div class="position-relative overflow-hidden rounded-top-4">
+                        <img src="${thumbnail}" class="card-img-top" alt="${course.title}" style="height: 180px; object-fit: cover;">
+                        <span class="position-absolute top-0 end-0 m-3 badge bg-white text-dark rounded-pill shadow-sm">
+                            ${priceDisplay}
+                        </span>
+                    </div>
+                    <div class="card-body p-4">
+                        <span class="badge bg-light text-dark rounded-pill mb-2">${course.category_name}</span>
+                        <h5 class="card-title fw-bold">${course.title}</h5>
+                        <p class="card-text text-muted small">${(course.short_description || '').substring(0, 80)}...</p>
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <small class="text-muted">
+                                <i class="fas fa-user-graduate me-1"></i> ${course.total_students || 0}
+                            </small>
+                            <span class="badge ${difficultyClass} rounded-pill">${difficultyText}</span>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-transparent border-0 pb-4 px-4">
+                        <a href="/course/${course.slug}/" class="btn btn-primary w-100 rounded-pill">تفاصيل الدورة</a>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    coursesContainer.innerHTML = html;
+}
+
+function getDifficultyClass(difficulty) {
+    const map = {
+        'beginner': 'bg-success',
+        'intermediate': 'bg-warning text-dark',
+        'advanced': 'bg-danger'
+    };
+    return map[difficulty] || 'bg-secondary';
+}
+
+function getDifficultyText(difficulty) {
+    const map = {
+        'beginner': 'مبتدئ',
+        'intermediate': 'متوسط',
+        'advanced': 'متقدم'
+    };
+    return map[difficulty] || difficulty;
+}
+
+function resetAllFilters() {
+    searchInput.value = '';
+    categoryFilter.value = '';
+    difficultyFilter.value = '';
+    minPriceInput.value = '0';
+    maxPriceInput.value = '50000';
+    sortSelect.value = 'newest';
+    applyFilters();
+}
+
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
 </script>
+
+<style>
+    .bg-light {
+        background-color: #f8f9fa !important;
+    }
+    .rounded-4 {
+        border-radius: 1rem !important;
+    }
+    .rounded-top-4 {
+        border-top-left-radius: 1rem !important;
+        border-top-right-radius: 1rem !important;
+    }
+    .card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
+    }
+</style>
 {% endblock %}

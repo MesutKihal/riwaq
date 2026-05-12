@@ -66,11 +66,72 @@
                     <!-- Video Player -->
                     <div class="ratio ratio-16x9">
                         <video controls class="w-100" id="videoPlayer">
-                            <source src="{{ lesson.video_file.url }}" type="video/mp4">
+                            {% if lesson.video_file %}
+                            <source src="{% url 'courses:stream_video' lesson.video_file.name %}" type="video/mp4">
+                            {% elif lesson.video_url %}
+                            <source src="{{ lesson.video_url }}" type="video/mp4">
+                            {% endif %}
                             متصفحك لا يدعم تشغيل الفيديو
                         </video>
                     </div>
-                    
+                    <!-- Video Progress Tracking -->
+                    <script>
+                        const videoPlayer = document.getElementById('videoPlayer');
+                        let saveTimeout;
+                        let lastSavedPosition = {{ progress.last_watched_position|default:0 }};
+
+                        // Resume from last position
+                        if (videoPlayer && lastSavedPosition > 0) {
+                            videoPlayer.addEventListener('loadedmetadata', function() {
+                                videoPlayer.currentTime = lastSavedPosition;
+                            });
+                        }
+
+                        // Save progress every 3 seconds
+                        videoPlayer?.addEventListener('timeupdate', function() {
+                            clearTimeout(saveTimeout);
+                            saveTimeout = setTimeout(() => {
+                                const currentPosition = Math.floor(videoPlayer.currentTime);
+                                if (currentPosition !== lastSavedPosition && currentPosition > 0) {
+                                    fetch('/api/save-video-progress/', {
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                            'X-CSRFToken': '{{ csrf_token }}'
+                                        },
+                                        body: JSON.stringify({
+                                            lesson_id: {{ lesson.id }},
+                                            position: currentPosition
+                                        })
+                                    });
+                                    lastSavedPosition = currentPosition;
+                                }
+                            }, 3000);
+                        });
+
+                        // Mark as completed when user watches 90% or more
+                        videoPlayer?.addEventListener('timeupdate', function() {
+                            if (videoPlayer.duration) {
+                                const percentWatched = (videoPlayer.currentTime / videoPlayer.duration) * 100;
+                                if (percentWatched >= 90 && !{{ progress.is_completed|lower }}) {
+                                    // Auto-mark as completed
+                                    fetch('{% url "courses:mark_lesson_complete" %}', {
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                            'X-CSRFToken': '{{ csrf_token }}'
+                                        },
+                                        body: JSON.stringify({
+                                            lesson_id: {{ lesson.id }}
+                                        })
+                                    }).then(() => {
+                                        location.reload();
+                                    });
+                                }
+                            }
+                        });
+                    </script>
+
                     {% elif lesson.lesson_type == 'pdf' %}
                     <!-- PDF Viewer -->
                     <div class="ratio ratio-1x1" style="min-height: 600px;">

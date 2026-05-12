@@ -1,38 +1,481 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}ملفي الشخصي - رواق{% endblock %}
+{% block title %}{{ profile_user.get_full_name|default:profile_user.username }} - رواق{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Profile Styles - Clean Version */
+    .profile-cover {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        height: 160px;
+        border-radius: 1rem 1rem 0 0;
+        position: relative;
+    }
+    
+    .profile-avatar {
+        position: absolute;
+        top: 70px;
+        right: 25px;
+    }
+    
+    .profile-avatar img {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        border: 4px solid white;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        object-fit: cover;
+    }
+    
+    .profile-avatar .edit-avatar {
+        position: absolute;
+        bottom: 5px;
+        right: 5px;
+        background: var(--primary);
+        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+    
+    .profile-avatar .edit-avatar:hover {
+        transform: scale(1.1);
+    }
+    
+    .stat-card-profile {
+        background: white;
+        border: 1px solid var(--gray-200);
+        border-radius: 1rem;
+        padding: 1rem;
+        text-align: center;
+        transition: all 0.2s ease;
+    }
+    
+    .stat-card-profile:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+    }
+    
+    .stat-circle {
+        width: 60px;
+        height: 60px;
+        background: var(--primary-soft);
+        border-radius: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 0.75rem;
+    }
+    
+    .stat-circle i {
+        font-size: 1.5rem;
+        color: var(--primary);
+    }
+    
+    .stat-number {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--primary);
+    }
+    
+    .info-card {
+        background: white;
+        border: 1px solid var(--gray-200);
+        border-radius: 1rem;
+        padding: 1.25rem;
+    }
+    
+    .info-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 0.75rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid var(--gray-100);
+    }
+    
+    .info-item:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+    
+    .info-icon {
+        width: 32px;
+        color: var(--primary);
+    }
+    
+    .activity-timeline {
+        position: relative;
+        padding-right: 30px;
+    }
+    
+    .activity-timeline::before {
+        content: '';
+        position: absolute;
+        right: 10px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: var(--primary);
+    }
+    
+    .activity-item {
+        position: relative;
+        margin-bottom: 1rem;
+    }
+    
+    .activity-icon {
+        position: absolute;
+        right: -22px;
+        top: 0;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: white;
+        border: 1px solid var(--gray-200);
+    }
+    
+    .skill-tag {
+        display: inline-block;
+        padding: 4px 12px;
+        background: var(--gray-100);
+        border-radius: 2rem;
+        font-size: 0.75rem;
+        margin: 3px;
+        color: var(--gray-700);
+    }
+    
+    .social-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: var(--gray-100);
+        border-radius: 2rem;
+        text-decoration: none;
+        color: var(--gray-700);
+        transition: all 0.2s ease;
+        font-size: 0.875rem;
+    }
+    
+    .social-link:hover {
+        background: var(--primary);
+        color: white;
+    }
+    
+    .certificate-item {
+        background: var(--gray-50);
+        border-radius: 0.75rem;
+        padding: 0.75rem;
+        transition: all 0.2s ease;
+    }
+    
+    .certificate-item:hover {
+        background: white;
+        border: 1px solid var(--gray-200);
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="container py-5">
-    <div class="row">
-        <div class="col-md-4">
-            <div class="card shadow text-center">
-                <div class="card-body">
-                    {% if user.profile_picture %}
-                    <img src="{{ user.profile_picture.url }}" class="rounded-circle mb-3" width="150" height="150">
-                    {% else %}
-                    <i class="fas fa-user-circle fa-5x mb-3" style="color: var(--mit-red);"></i>
+<div class="container py-4">
+    <!-- Profile Header -->
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+        <div class="profile-cover"></div>
+        
+        <div class="p-4 pt-5">
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="profile-avatar">
+                        {% if profile_user.profile_picture %}
+                        <img src="{{ profile_user.profile_picture.url }}" alt="{{ profile_user.username }}">
+                        {% else %}
+                        <img src="https://ui-avatars.com/api/?background=1B4F72&color=fff&name={{ profile_user.username }}" alt="{{ profile_user.username }}">
+                        {% endif %}
+                        {% if is_own_profile %}
+                        <a href="{% url 'users:edit_profile' %}" class="edit-avatar">
+                            <i class="fas fa-camera fa-sm"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                    <h2 class="fw-bold mb-1">{{ profile_user.get_full_name|default:profile_user.username }}</h2>
+                    <div class="d-flex gap-2 mb-3 flex-wrap">
+                        <span class="badge {% if profile_user.is_instructor %}bg-primary{% else %}bg-secondary{% endif %}">
+                            {% if profile_user.is_instructor %}مدرب{% else %}طالب{% endif %}
+                        </span>
+                        <span class="badge bg-light text-dark">
+                            <i class="fas fa-calendar-alt me-1"></i> انضم {{ profile_user.date_joined|date:"Y/m" }}
+                        </span>
+                    </div>
+                    
+                    {% if profile_user.bio %}
+                    <p class="text-muted">{{ profile_user.bio }}</p>
                     {% endif %}
-                    <h4>{{ user.get_full_name|default:user.username }}</h4>
-                    <p class="text-muted">{{ user.get_role_display }}</p>
-                    <a href="{% url 'users:edit_profile' %}" class="btn btn-mit-red">تعديل الملف الشخصي</a>
+                    
+                    <div class="row g-3 mt-2">
+                        {% if profile_user.city or profile_user.country %}
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <i class="fas fa-map-marker-alt info-icon"></i>
+                                <span>{{ profile_user.city }}{% if profile_user.city and profile_user.country %}, {% endif %}{{ profile_user.country }}</span>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if profile_user.phone_number %}
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <i class="fas fa-phone info-icon"></i>
+                                <span>{{ profile_user.phone_number }}</span>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <i class="fas fa-envelope info-icon"></i>
+                                <span>{{ profile_user.email }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    {% if is_own_profile %}
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'users:edit_profile' %}" class="btn btn-primary rounded-pill">
+                            <i class="fas fa-edit me-2"></i> تعديل الملف الشخصي
+                        </a>
+                        <a href="{% url 'users:change_password' %}" class="btn btn-outline-secondary rounded-pill">
+                            <i class="fas fa-key me-2"></i> تغيير كلمة المرور
+                        </a>
+                        <a href="{% url 'users:email_preferences' %}" class="btn btn-outline-secondary rounded-pill">
+                            <i class="fas fa-bell me-2"></i> تفضيلات الإشعارات
+                        </a>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
-        <div class="col-md-8">
-            <div class="card shadow">
-                <div class="card-body">
-                    <h4>معلومات الحساب</h4>
-                    <hr>
-                    <p><strong>اسم المستخدم:</strong> {{ user.username }}</p>
-                    <p><strong>البريد الإلكتروني:</strong> {{ user.email }}</p>
-                    <p><strong>رقم الهاتف:</strong> {{ user.phone_number|default:"غير محدد" }}</p>
-                    <p><strong>تاريخ الانضمام:</strong> {{ user.date_joined|date:"d/m/Y" }}</p>
-                    {% if user.bio %}
-                    <p><strong>نبذة عني:</strong> {{ user.bio }}</p>
+    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="row g-4 mt-4">
+        <div class="col-md-3">
+            <div class="stat-card-profile">
+                <div class="stat-circle mx-auto">
+                    <i class="fas fa-book"></i>
+                </div>
+                <div class="stat-number">{{ total_courses }}</div>
+                <p class="text-muted small mb-0">دورة مسجل فيها</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card-profile">
+                <div class="stat-circle mx-auto">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-number">{{ completed_count }}</div>
+                <p class="text-muted small mb-0">دورة مكتملة</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card-profile">
+                <div class="stat-circle mx-auto">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="stat-number">{{ completion_rate }}%</div>
+                <p class="text-muted small mb-0">نسبة الإكمال</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card-profile">
+                <div class="stat-circle mx-auto">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-number">{{ total_hours }}</div>
+                <p class="text-muted small mb-0">ساعة تعلم</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Content Row -->
+    <div class="row g-4 mt-2">
+        <!-- Left Column -->
+        <div class="col-lg-4">
+            <!-- Instructor Section -->
+            {% if profile_user.is_instructor %}
+            <div class="info-card mb-4">
+                <h5 class="fw-bold mb-3">
+                    <i class="fas fa-chalkboard-user text-primary me-2"></i> المعلومات المهنية
+                </h5>
+                
+                {% if profile_user.instructor_bio %}
+                <p class="text-muted small">{{ profile_user.instructor_bio }}</p>
+                {% endif %}
+                
+                {% if profile_user.years_experience %}
+                <div class="info-item">
+                    <i class="fas fa-briefcase info-icon"></i>
+                    <span>{{ profile_user.years_experience }} سنوات خبرة</span>
+                </div>
+                {% endif %}
+                
+                {% if profile_user.company %}
+                <div class="info-item">
+                    <i class="fas fa-building info-icon"></i>
+                    <span>{{ profile_user.company }} - {{ profile_user.position }}</span>
+                </div>
+                {% endif %}
+                
+                {% if profile_user.get_expertise_list %}
+                <div class="mt-3">
+                    <strong class="small">مجالات الخبرة:</strong>
+                    <div class="mt-2">
+                        {% for expertise in profile_user.get_expertise_list %}
+                        <span class="skill-tag">{{ expertise }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+            
+            <!-- Social Links -->
+            {% if profile_user.website or profile_user.github or profile_user.linkedin or profile_user.twitter %}
+            <div class="info-card mb-4">
+                <h5 class="fw-bold mb-3">
+                    <i class="fas fa-share-alt text-primary me-2"></i> الروابط الاجتماعية
+                </h5>
+                <div class="d-flex flex-wrap gap-2">
+                    {% if profile_user.website %}
+                    <a href="{{ profile_user.website }}" target="_blank" class="social-link">
+                        <i class="fas fa-globe"></i> الموقع
+                    </a>
+                    {% endif %}
+                    {% if profile_user.github %}
+                    <a href="{{ profile_user.github }}" target="_blank" class="social-link">
+                        <i class="fab fa-github"></i> GitHub
+                    </a>
+                    {% endif %}
+                    {% if profile_user.linkedin %}
+                    <a href="{{ profile_user.linkedin }}" target="_blank" class="social-link">
+                        <i class="fab fa-linkedin"></i> LinkedIn
+                    </a>
+                    {% endif %}
+                    {% if profile_user.twitter %}
+                    <a href="{{ profile_user.twitter }}" target="_blank" class="social-link">
+                        <i class="fab fa-twitter"></i> Twitter
+                    </a>
                     {% endif %}
                 </div>
             </div>
+            {% endif %}
+            
+            <!-- Profile Completion -->
+            {% if is_own_profile and profile_user.profile_completion_percentage < 100 %}
+            <div class="info-card">
+                <h5 class="fw-bold mb-3">اكتمال الملف الشخصي</h5>
+                <div class="mb-2">
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar bg-primary" style="width: {{ profile_user.profile_completion_percentage }}%"></div>
+                    </div>
+                    <small class="text-muted">{{ profile_user.profile_completion_percentage }}% مكتمل</small>
+                </div>
+                <a href="{% url 'users:edit_profile' %}" class="btn btn-sm btn-outline-primary w-100 rounded-pill">
+                    أكمل ملفك الشخصي
+                </a>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Right Column -->
+        <div class="col-lg-8">
+            <!-- Recent Activity -->
+            <div class="info-card mb-4">
+                <h5 class="fw-bold mb-4">
+                    <i class="fas fa-history text-primary me-2"></i> النشاطات الأخيرة
+                </h5>
+                
+                {% if recent_activities %}
+                <div class="activity-timeline">
+                    {% for activity in recent_activities %}
+                    <div class="activity-item">
+                        <div class="activity-icon">
+                            <i class="fas {{ activity.icon }} fa-sm text-primary"></i>
+                        </div>
+                        <div class="me-3">
+                            <p class="mb-1">{{ activity.title }}</p>
+                            <small class="text-muted">{{ activity.date|timesince }} مضى</small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted text-center py-3">لا توجد نشاطات بعد</p>
+                {% endif %}
+            </div>
+            
+            <!-- Certificates -->
+            {% if certificates %}
+            <div class="info-card">
+                <h5 class="fw-bold mb-4">
+                    <i class="fas fa-certificate text-primary me-2"></i> الشهادات
+                </h5>
+                <div class="row g-3">
+                    {% for certificate in certificates|slice:":6" %}
+                    <div class="col-md-6">
+                        <div class="certificate-item d-flex align-items-center gap-3">
+                            <i class="fas fa-award fa-2x text-primary"></i>
+                            <div>
+                                <strong class="small">{{ certificate.course.title }}</strong>
+                                <br>
+                                <small class="text-muted">{{ certificate.issued_date|date:"Y/m/d" }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% if certificates.count > 6 %}
+                <div class="text-center mt-3">
+                    <a href="#" class="text-muted small">عرض الكل ({{ certificates.count }})</a>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+            
+            <!-- Instructor Stats -->
+            {% if instructor_stats %}
+            <div class="info-card mt-4">
+                <h5 class="fw-bold mb-4">
+                    <i class="fas fa-chart-simple text-primary me-2"></i> إحصائيات التدريس
+                </h5>
+                <div class="row g-3 text-center">
+                    <div class="col-6">
+                        <div class="stat-number">{{ instructor_stats.total_courses }}</div>
+                        <small class="text-muted">دورات منشورة</small>
+                    </div>
+                    <div class="col-6">
+                        <div class="stat-number">{{ instructor_stats.total_students }}</div>
+                        <small class="text-muted">طلاب مسجلين</small>
+                    </div>
+                    <div class="col-12 mt-2">
+                        <div class="stat-number">{{ instructor_stats.total_revenue|floatformat:0 }} DZD</div>
+                        <small class="text-muted">إجمالي الأرباح</small>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
         </div>
     </div>
 </div>

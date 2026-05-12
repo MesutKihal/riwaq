@@ -1,0 +1,39 @@
+{% extends 'emails/base_email.html' %}
+
+{% block title %}تأكيد الدفع - {{ course.title }}{% endblock %}
+
+{% block content %}
+<h2 style="color: #7d0f2a;">تم تأكيد دفعك بنجاح ✅</h2>
+
+<p>مرحباً {{ student_name }},</p>
+
+<p>نؤكد استلام دفعتك لدورة <strong>{{ course.title }}</strong>.</p>
+
+<div style="background: #f5f7fa; padding: 20px; border-radius: 16px; margin: 20px 0;">
+    <h3 style="margin-top: 0;">تفاصيل الدفع:</h3>
+    <table style="width: 100%;">
+        <tr>
+            <td><strong>الدورة:</strong></td>
+            <td>{{ course.title }}</td>
+        </tr>
+        <tr>
+            <td><strong>المبلغ:</strong></td>
+            <td style="color: #7d0f2a; font-weight: bold;">{{ amount }} DZD</td>
+        </tr>
+        <tr>
+            <td><strong>تاريخ الدفع:</strong></td>
+            <td>{{ payment_date }}</td>
+        </tr>
+        <tr>
+            <td><strong>رقم العملية:</strong></td>
+            <td>{{ transaction_id }}</td>
+        </tr>
+    </table>
+</div>
+
+<a href="{{ course_url }}" class="button">ابدأ التعلم الآن</a>
+
+<p style="margin-top: 20px;">
+    <small>ملاحظة: يمكنك الوصول إلى الدورة في أي وقت من خلال حسابك في رواق</small>
+</p>
+{% endblock %}

@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}تفضيلات البريد الإلكتروني - رواق{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="neumorphic-card p-4">
+                <h2 class="mb-4">تفضيلات البريد الإلكتروني</h2>
+                <p class="text-muted mb-4">اختر أنواع الرسائل التي ترغب في استلامها</p>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" 
+                                   name="email_notifications" id="emailNotifications"
+                                   {% if user.email_notifications %}checked{% endif %}>
+                            <label class="form-check-label" for="emailNotifications">
+                                <strong>الإشعارات العامة</strong>
+                                <p class="small text-muted mb-0">استلام إشعارات حول دوراتي وتقدمي</p>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" 
+                                   name="marketing_emails" id="marketingEmails"
+                                   {% if user.marketing_emails %}checked{% endif %}>
+                            <label class="form-check-label" for="marketingEmails">
+                                <strong>العروض والتحديثات</strong>
+                                <p class="small text-muted mb-0">عروض حصرية ودورات جديدة</p>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" 
+                                   name="course_updates" id="courseUpdates"
+                                   {% if user.course_updates %}checked{% endif %}>
+                            <label class="form-check-label" for="courseUpdates">
+                                <strong>تحديثات الدورات</strong>
+                                <p class="small text-muted mb-0">تحديثات حول الدورات المسجل فيها</p>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <div class="d-flex gap-3">
+                        <button type="submit" class="btn btn-mit-red">حفظ التغييرات</button>
+                        <a href="{% url 'users:profile' %}" class="btn btn-secondary">إلغاء</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

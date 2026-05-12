@@ -1,0 +1,355 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}لوحة تحكم المدرب - رواق{% endblock %}
+
+{% block extra_css %}
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<style>
+    /* Dashboard Styles - Clean Version */
+    .stat-card {
+        background: white;
+        border: 1px solid var(--gray-200);
+        border-radius: 1rem;
+        padding: 1.25rem;
+        text-align: center;
+        transition: all 0.2s ease;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+    }
+    
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        background: var(--primary-soft);
+        border-radius: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 0.75rem;
+    }
+    
+    .stat-icon i {
+        font-size: 1.5rem;
+        color: var(--primary);
+    }
+    
+    .stat-value {
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: var(--primary);
+    }
+    
+    .chart-card {
+        background: white;
+        border: 1px solid var(--gray-200);
+        border-radius: 1rem;
+        padding: 1.25rem;
+    }
+    
+    .course-row {
+        background: white;
+        border: 1px solid var(--gray-200);
+        border-radius: 0.75rem;
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+        transition: all 0.2s ease;
+    }
+    
+    .course-row:hover {
+        background: var(--gray-50);
+        transform: translateX(5px);
+    }
+    
+    .progress-custom {
+        height: 6px;
+        background: var(--gray-200);
+        border-radius: 3px;
+        overflow: hidden;
+    }
+    
+    .progress-custom-bar {
+        height: 100%;
+        background: var(--primary);
+        border-radius: 3px;
+        transition: width 0.3s ease;
+    }
+    
+    .btn-outline-primary-custom {
+        border: 1px solid var(--primary);
+        color: var(--primary);
+        background: transparent;
+        border-radius: 2rem;
+        padding: 0.5rem 1rem;
+        transition: all 0.2s ease;
+    }
+    
+    .btn-outline-primary-custom:hover {
+        background: var(--primary);
+        color: white;
+    }
+    
+    .enrollment-row {
+        border-bottom: 1px solid var(--gray-200);
+        padding: 0.75rem 0;
+    }
+    
+    .enrollment-row:last-child {
+        border-bottom: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- Welcome Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="fw-bold mb-2">مرحباً {{ user.get_full_name|default:user.username }}</h1>
+            <p class="text-muted">هذه نظرة عامة على أداء دوراتك وإحصائياتك</p>
+        </div>
+        <a href="{% url 'courses:course_create' %}" class="btn btn-primary rounded-pill px-4">
+            <i class="fas fa-plus me-2"></i>دورة جديدة
+        </a>
+    </div>
+    
+    <!-- Stats Cards -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon mx-auto">
+                    <i class="fas fa-book"></i>
+                </div>
+                <div class="stat-value">{{ total_courses }}</div>
+                <p class="text-muted small mb-0">الدورات المنشورة</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon mx-auto">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-value">{{ total_students }}</div>
+                <p class="text-muted small mb-0">إجمالي الطلاب</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon mx-auto">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="stat-value">{{ avg_completion }}%</div>
+                <p class="text-muted small mb-0">متوسط الإكمال</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-icon mx-auto">
+                    <i class="fas fa-coins"></i>
+                </div>
+                <div class="stat-value">{{ total_revenue|floatformat:0 }} DZD</div>
+                <p class="text-muted small mb-0">إجمالي الأرباح</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Chart & Payout Row -->
+    <div class="row g-4 mb-5">
+        <div class="col-lg-8">
+            <div class="chart-card">
+                <h5 class="fw-bold mb-3">
+                    <i class="fas fa-chart-line text-primary me-2"></i>
+                    اتجاه التسجيلات
+                </h5>
+                <div id="enrollmentChart"></div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="chart-card">
+                <h5 class="fw-bold mb-3">
+                    <i class="fas fa-wallet text-primary me-2"></i>
+                    الأرباح المستحقة
+                </h5>
+                <div class="text-center mb-3">
+                    <div class="display-5 fw-bold text-primary">
+                        {{ total_pending_payout|floatformat:0 }} DZD
+                    </div>
+                    <small class="text-muted">قيد المراجعة</small>
+                </div>
+                <hr>
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">تم صرفه سابقاً:</span>
+                    <strong>{{ total_paid_payout|floatformat:0 }} DZD</strong>
+                </div>
+                <div class="progress-custom mt-2">
+                    <div class="progress-custom-bar" style="width: 0%"></div>
+                </div>
+                <button class="btn btn-primary w-100 mt-3 rounded-pill" onclick="requestPayout()">
+                    <i class="fas fa-download me-2"></i> طلب صرف الأرباح
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Course Performance -->
+    <div class="chart-card mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h5 class="fw-bold mb-0">
+                <i class="fas fa-trophy text-primary me-2"></i>
+                أداء الدورات
+            </h5>
+            <select class="form-select w-auto rounded-pill" id="performanceFilter" style="width: auto;">
+                <option value="all">جميع الدورات</option>
+                <option value="most">الأكثر تسجيلاً</option>
+            </select>
+        </div>
+        
+        {% for course in courses %}
+        <div class="course-row" data-students="{{ course.total_students_count }}">
+            <div class="row align-items-center">
+                <div class="col-md-4">
+                    <div class="d-flex align-items-center gap-3">
+                        {% if course.thumbnail %}
+                        <img src="{{ course.thumbnail.url }}" width="48" height="48" 
+                             style="border-radius: 0.75rem; object-fit: cover;">
+                        {% else %}
+                        <div class="stat-icon" style="width: 48px; height: 48px;">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        {% endif %}
+                        <div>
+                            <h6 class="fw-bold mb-1">{{ course.title }}</h6>
+                            <small class="text-muted">{{ course.category.name }}</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2 text-center">
+                    <div class="fw-bold">{{ course.total_students_count }}</div>
+                    <small class="text-muted">طالب</small>
+                </div>
+                <div class="col-md-3">
+                    <div class="d-flex justify-content-between small mb-1">
+                        <span>معدل الإكمال</span>
+                        <span>{{ course.completion_rate|floatformat:0 }}%</span>
+                    </div>
+                    <div class="progress-custom">
+                        <div class="progress-custom-bar" style="width: {{ course.completion_rate }}%"></div>
+                    </div>
+                </div>
+                <div class="col-md-2 text-center">
+                    <div class="fw-bold text-success">{{ course.total_revenue|floatformat:0 }} DZD</div>
+                    <small class="text-muted">أرباح</small>
+                </div>
+                <div class="col-md-1 text-center">
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-light rounded-circle" data-bs-toggle="dropdown">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="{% url 'courses:course_edit' course.slug %}">
+                                <i class="fas fa-edit"></i> تعديل
+                            </a></li>
+                            <li><a class="dropdown-item" href="{% url 'courses:course_detail' course.slug %}">
+                                <i class="fas fa-eye"></i> معاينة
+                            </a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="text-center py-5">
+            <i class="fas fa-chalkboard-teacher fa-4x text-muted mb-3"></i>
+            <h5 class="text-muted">ليس لديك دورات بعد</h5>
+            <p class="text-muted">ابدأ بإنشاء أول دورة لك</p>
+            <a href="{% url 'courses:course_create' %}" class="btn btn-primary rounded-pill">
+                <i class="fas fa-plus me-2"></i> إنشاء دورة جديدة
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Recent Enrollments -->
+    {% if recent_enrollments %}
+    <div class="chart-card">
+        <h5 class="fw-bold mb-3">
+            <i class="fas fa-clock text-primary me-2"></i>
+            آخر التسجيلات
+        </h5>
+        {% for enrollment in recent_enrollments %}
+        <div class="enrollment-row">
+            <div class="row align-items-center">
+                <div class="col-md-4">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="fas fa-user-circle text-muted fa-lg"></i>
+                        <span>{{ enrollment.student.get_full_name|default:enrollment.student.username }}</span>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <small class="text-muted">{{ enrollment.course.title }}</small>
+                </div>
+                <div class="col-md-2">
+                    <small class="text-muted">{{ enrollment.enrolled_date|date:"Y-m-d" }}</small>
+                </div>
+                <div class="col-md-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="progress-custom flex-grow-1">
+                            <div class="progress-custom-bar" style="width: {{ enrollment.progress_percentage }}%"></div>
+                        </div>
+                        <small>{{ enrollment.progress_percentage }}%</small>
+                    </div>
+                </div>
+                <div class="col-md-1 text-center">
+                    <a href="#" class="text-muted">
+                        <i class="fas fa-envelope"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    // Render Plotly chart
+    const chartData = {{ enrollment_chart|safe }};
+    Plotly.newPlot('enrollmentChart', chartData.data, chartData.layout, {responsive: true});
+    
+    // Filter courses
+    document.getElementById('performanceFilter')?.addEventListener('change', function(e) {
+        const filter = e.target.value;
+        const items = document.querySelectorAll('.course-row');
+        
+        items.forEach(item => {
+            if (filter === 'all') {
+                item.style.display = 'block';
+            } else if (filter === 'most') {
+                const students = parseInt(item.getAttribute('data-students'));
+                item.style.display = students > 50 ? 'block' : 'none';
+            }
+        });
+    });
+    
+    // Request payout function
+    function requestPayout() {
+        if (confirm('هل تريد طلب صرف أرباحك المستحقة؟')) {
+            fetch('/instructor/request-payout/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                }
+            }).then(response => response.json())
+              .then(data => {
+                  if (data.success) {
+                      alert('تم إرسال طلب الصرف بنجاح');
+                      location.reload();
+                  }
+              });
+        }
+    }
+</script>
+{% endblock %}

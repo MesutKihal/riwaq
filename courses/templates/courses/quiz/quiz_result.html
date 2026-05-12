@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}نتيجة الاختبار - {{ quiz.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow text-center">
+                <div class="card-body p-5">
+                    {% if attempt.passed %}
+                    <i class="fas fa-trophy fa-5x mb-3" style="color: #FFD700;"></i>
+                    <h2 class="text-success mb-3">تهانينا!</h2>
+                    <p class="lead">لقد اجتزت الاختبار بنجاح</p>
+                    {% else %}
+                    <i class="fas fa-times-circle fa-5x mb-3" style="color: #dc3545;"></i>
+                    <h2 class="text-danger mb-3">لم تجتز الاختبار</h2>
+                    <p class="lead">حاول مرة أخرى لتحسين نتيجتك</p>
+                    {% endif %}
+                    
+                    <div class="my-4">
+                        <div class="display-1 fw-bold">{{ attempt.score }}%</div>
+                        <div class="progress progress-mit mt-2" style="height: 10px;">
+                            <div class="progress-bar" style="width: {{ attempt.score }}%"></div>
+                        </div>
+                        <p class="text-muted mt-2">
+                            درجة النجاح المطلوبة: {{ quiz.passing_score }}%
+                        </p>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-6">
+                            <div class="border rounded p-3">
+                                <small class="text-muted">الدرجة</small>
+                                <h4 class="mb-0">{{ attempt.score }}/100</h4>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="border rounded p-3">
+                                <small class="text-muted">المحاولة</small>
+                                <h4 class="mb-0">{{ attempt.attempt_number }}/{{ quiz.attempts_allowed }}</h4>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex gap-3 justify-content-center">
+                        <a href="{% url 'courses:quiz_review' attempt.id %}" class="btn btn-outline-primary">
+                            <i class="fas fa-eye"></i> مراجعة الإجابات
+                        </a>
+                        <a href="{% url 'courses:lesson_view' quiz.lesson.module.course.slug quiz.lesson.id %}" class="btn btn-mit-red">
+                            <i class="fas fa-arrow-left"></i> العودة للدرس
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

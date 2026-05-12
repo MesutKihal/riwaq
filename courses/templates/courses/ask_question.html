@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block title %}اسأل سؤالاً - {{ course.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body p-4">
+                    <h2 class="fw-bold mb-4">اسأل سؤالاً</h2>
+                    <p class="text-muted mb-4">الدورة: {{ course.title }}</p>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">عنوان السؤال</label>
+                            <input type="text" name="title" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">تفاصيل السؤال</label>
+                            <textarea name="content" class="form-control" rows="6" required></textarea>
+                        </div>
+                        <div class="d-flex gap-3">
+                            <button type="submit" class="btn btn-primary rounded-pill px-4">
+                                نشر السؤال
+                            </button>
+                            <a href="{% url 'courses:discussion_list' course.slug %}" class="btn btn-outline-secondary rounded-pill px-4">
+                                إلغاء
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,291 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} - رواق{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="mb-4">
+                <h1 class="fw-bold mb-2">{{ title }}</h1>
+                <p class="text-muted">أكمل المعلومات أدناه لإنشاء دورة جديدة</p>
+            </div>
+            
+            <!-- Form -->
+            <form method="post" enctype="multipart/form-data" id="courseForm">
+                {% csrf_token %}
+                
+                <!-- Basic Information -->
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-4">معلومات الدورة</h5>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">عنوان الدورة <span class="text-danger">*</span></label>
+                            {{ form.title }}
+                            {% if form.title.errors %}
+                            <div class="text-danger small mt-1">{{ form.title.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">المعرف (Slug)</label>
+                            {{ form.slug }}
+                            <small class="text-muted">سيتم إنشاؤه تلقائياً من العنوان</small>
+                            {% if form.slug.errors %}
+                            <div class="text-danger small mt-1">{{ form.slug.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">وصف قصير</label>
+                            {{ form.short_description }}
+                            <small class="text-muted">يظهر في بطاقات الدورة (300 حرف كحد أقصى)</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">وصف كامل <span class="text-danger">*</span></label>
+                            {{ form.description }}
+                            {% if form.description.errors %}
+                            <div class="text-danger small mt-1">{{ form.description.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Category & Level -->
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-4">التصنيف والمستوى</h5>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">التصنيف <span class="text-danger">*</span></label>
+                                {{ form.category }}
+                                {% if form.category.errors %}
+                                <div class="text-danger small mt-1">{{ form.category.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-semibold">المستوى <span class="text-danger">*</span></label>
+                                {{ form.difficulty }}
+                                {% if form.difficulty.errors %}
+                                <div class="text-danger small mt-1">{{ form.difficulty.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Media -->
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-4">صورة الغلاف</h5>
+                        
+                        <div class="upload-area" id="uploadArea">
+                            <div id="uploadPlaceholder" class="text-center py-4">
+                                <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+                                <p class="mb-1">اسحب الصورة هنا أو انقر للاختيار</p>
+                                <small class="text-muted">JPG, PNG, GIF (حد أقصى 5MB)</small>
+                            </div>
+                            <div id="uploadPreview" class="text-center" style="display: none;">
+                                <img id="previewImage" src="" alt="Preview" class="img-fluid rounded-3 mb-3" style="max-height: 200px;">
+                                <div>
+                                    <button type="button" id="removeImage" class="btn btn-sm btn-outline-danger rounded-pill">إزالة</button>
+                                </div>
+                            </div>
+                            {{ form.thumbnail }}
+                        </div>
+                        {% if form.thumbnail.errors %}
+                        <div class="text-danger small mt-2">{{ form.thumbnail.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Course Details -->
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-4">تفاصيل الدورة</h5>
+                        
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-semibold">المدة (أسابيع)</label>
+                                {{ form.duration_weeks }}
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-semibold">اللغة</label>
+                                {{ form.language }}
+                            </div>
+                            
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-semibold">السعر (DZD)</label>
+                                {{ form.price }}
+                                <small class="text-muted">0 = دورة مجانية</small>
+                                {% if form.price.errors %}
+                                <div class="text-danger small mt-1">{{ form.price.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Publish -->
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-body p-4">
+                        <div class="form-check form-switch">
+                            {{ form.is_published }}
+                            <label class="form-check-label fw-semibold">نشر الدورة فوراً</label>
+                        </div>
+                        <small class="text-muted">إذا لم تختر النشر، سيتم حفظ الدورة كمسودة</small>
+                    </div>
+                </div>
+                
+                <!-- Actions -->
+                <div class="d-flex gap-3 justify-content-end">
+                    <a href="{% url 'courses:instructor_dashboard' %}" class="btn btn-outline-secondary rounded-pill px-4">إلغاء</a>
+                    <button type="submit" class="btn btn-primary rounded-pill px-5">حفظ الدورة</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .upload-area {
+        border: 2px dashed #dee2e6;
+        border-radius: 1rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        background: #f8f9fa;
+    }
+    
+    .upload-area:hover {
+        border-color: #0d6efd;
+        background: #f0f7ff;
+    }
+    
+    .form-control, .form-select {
+        border: 1px solid #dee2e6;
+        border-radius: 0.75rem;
+        padding: 0.625rem 1rem;
+        transition: all 0.2s ease;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
+        outline: none;
+    }
+    
+    textarea.form-control {
+        resize: vertical;
+    }
+    
+    .form-check-input {
+        width: 2.5rem;
+        height: 1.25rem;
+        cursor: pointer;
+    }
+    
+    .form-check-input:checked {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+    }
+    
+    #id_thumbnail {
+        display: none;
+    }
+</style>
+
+<script>
+    // Auto-generate slug from title
+    const titleInput = document.querySelector('#id_title');
+    const slugInput = document.querySelector('#id_slug');
+    
+    function generateSlug(text) {
+        return text.toString().toLowerCase()
+            .replace(/\s+/g, '-')
+            .replace(/[^\w\-]+/g, '')
+            .replace(/\-\-+/g, '-')
+            .replace(/^-+/, '')
+            .replace(/-+$/, '');
+    }
+    
+    if (titleInput && slugInput) {
+        titleInput.addEventListener('input', function() {
+            const slug = generateSlug(this.value);
+            slugInput.value = slug;
+        });
+    }
+    
+    // Thumbnail upload
+    const uploadArea = document.getElementById('uploadArea');
+    const thumbnailInput = document.getElementById('id_thumbnail');
+    const uploadPlaceholder = document.getElementById('uploadPlaceholder');
+    const uploadPreview = document.getElementById('uploadPreview');
+    const previewImage = document.getElementById('previewImage');
+    const removeImage = document.getElementById('removeImage');
+    
+    if (uploadArea && thumbnailInput) {
+        uploadArea.addEventListener('click', () => {
+            thumbnailInput.click();
+        });
+        
+        thumbnailInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    previewImage.src = event.target.result;
+                    uploadPlaceholder.style.display = 'none';
+                    uploadPreview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        // Drag and drop
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#0d6efd';
+            uploadArea.style.background = '#f0f7ff';
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.style.borderColor = '#dee2e6';
+            uploadArea.style.background = '#f8f9fa';
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#dee2e6';
+            uploadArea.style.background = '#f8f9fa';
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) {
+                thumbnailInput.files = e.dataTransfer.files;
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    previewImage.src = event.target.result;
+                    uploadPlaceholder.style.display = 'none';
+                    uploadPreview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        if (removeImage) {
+            removeImage.addEventListener('click', (e) => {
+                e.stopPropagation();
+                thumbnailInput.value = '';
+                uploadPlaceholder.style.display = 'block';
+                uploadPreview.style.display = 'none';
+                previewImage.src = '';
+            });
+        }
+    }
+</script>
+{% endblock %}

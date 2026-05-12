@@ -5,10 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}رواق - منصة التعلم الجزائرية{% endblock %}</title>
     
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
     <!-- Bootstrap 5 RTL -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
     
-    <!-- Font Awesome 6 -->
+    <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
     <!-- Alpine.js -->
@@ -17,154 +21,595 @@
     <!-- Fuse.js -->
     <script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0"></script>
     
-    <!-- Custom CSS -->
+    <!-- AOS Animation -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    
     <style>
+        /* CSS Reset & Variables */
         :root {
-            --mit-red: #A31F34;
-            --mit-red-dark: #8a1a2c;
-            --mit-red-light: #c42b44;
-            --gray-100: #F8F9FA;
+            --primary: #1B4F72;
+            --primary-dark: #0D3B4F;
+            --primary-light: #2E86C1;
+            --secondary: #148F77;
+            --secondary-light: #76D7C4;
+            --gray-50: #F8F9FA;
+            --gray-100: #F1F3F5;
             --gray-200: #E9ECEF;
+            --gray-300: #DEE2E6;
+            --gray-600: #6C757D;
+            --gray-700: #495057;
             --gray-800: #343A40;
+            --gray-900: #212529;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
         
         body {
-            background-color: var(--gray-100);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Noto Kufi Arabic', 'Inter', sans-serif;
+            background: white;
+            color: var(--gray-800);
+            line-height: 1.5;
+            position: relative;
         }
         
-        /* Modern card design */
-        .course-card {
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            border: none;
-            border-radius: 12px;
-            overflow: hidden;
+        /* Subtle Background Pattern */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cpath fill='%231B4F72' fill-opacity='0.02' d='M100 0 L200 100 L100 200 L0 100 Z'/%3E%3C/svg%3E");
+            background-repeat: repeat;
+            background-size: 60px 60px;
+            pointer-events: none;
+            z-index: 0;
         }
         
-        .course-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.1);
+        /* Ensure content sits above background */
+        .navbar, main, footer {
+            position: relative;
+            z-index: 0;
+            background: transparent;
         }
         
-        /* MIT Red accent */
-        .btn-mit-red {
-            background-color: var(--mit-red);
-            color: white;
-            border: none;
+        /* Cards keep white background */
+        .card, .bg-white {
+            background: white;
+        }
+        /* Typography */
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: 1rem;
+        }
+        
+        h1 { font-size: 3rem; letter-spacing: -0.02em; }
+        h2 { font-size: 2rem; letter-spacing: -0.01em; }
+        h3 { font-size: 1.5rem; }
+        
+        @media (max-width: 768px) {
+            h1 { font-size: 2rem; }
+            h2 { font-size: 1.5rem; }
+        }
+        
+        /* Links */
+        a {
+            text-decoration: none;
+            color: var(--primary);
+            transition: color 0.2s ease;
+        }
+        
+        a:hover {
+            color: var(--primary-dark);
+        }
+        
+        /* Buttons */
+        .btn {
+            border-radius: 2rem;
+            padding: 0.625rem 1.5rem;
+            font-weight: 500;
             transition: all 0.2s ease;
         }
         
-        .btn-mit-red:hover {
-            background-color: var(--mit-red-dark);
+        .btn-primary {
+            background: var(--primary);
+            border: none;
+        }
+        
+        .btn-primary:hover {
+            background: var(--primary-dark);
             transform: translateY(-1px);
+        }
+        
+        .btn-outline-primary {
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            background: transparent;
+        }
+        
+        .btn-outline-primary:hover {
+            background: var(--primary);
             color: white;
         }
         
-        /* Progress bar styling */
-        .progress-mit {
-            background-color: var(--gray-200);
-            border-radius: 10px;
+        /* Navbar */
+        .navbar {
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--gray-200);
+            background: white;
+            position: sticky;
+            top: 0;
+            z-index: 1030;  
         }
         
-        .progress-mit .progress-bar {
-            background-color: var(--mit-red);
-            border-radius: 10px;
+        .navbar-brand {
+            font-weight: 800;
+            font-size: 1.5rem;
+            color: var(--primary);
         }
         
-        /* Typography improvements */
-        h1, h2, h3, h4, h5, h6 {
-            font-weight: 600;
-            letter-spacing: -0.02em;
+        .nav-link {
+            color: var(--gray-700);
+            font-weight: 500;
+            padding: 0.5rem 1rem;
         }
         
-        /* Modern navbar */
-        .navbar-modern {
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        .nav-link:hover {
+            color: var(--primary);
+        }
+        
+        /* Cards */
+        .card {
+            border: 1px solid var(--gray-200);
+            border-radius: 1rem;
+            transition: all 0.2s ease;
             background: white;
         }
+        
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+        }
+        
+        /* Form Controls */
+        .form-control, .form-select {
+            border: 1px solid var(--gray-300);
+            border-radius: 0.75rem;
+            padding: 0.625rem 1rem;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(27, 79, 114, 0.1);
+            outline: none;
+        }
+        
+        /* Section Spacing */
+        section {
+            padding: 4rem 0;
+        }
+        
+        @media (max-width: 768px) {
+            section {
+                padding: 2rem 0;
+            }
+        }
+        
+        /* Utilities */
+        .text-primary { color: var(--primary) !important; }
+        .bg-primary-soft { background: rgba(27, 79, 114, 0.05); }
+        .border-subtle { border-color: var(--gray-200) !important; }
+        .rounded-4 { border-radius: 1rem !important; }
+        
+        /* Container */
+        .container {
+            max-width: 1280px;
+            padding: 0 1.5rem;
+        }
+        
+        /* Footer */
+        .footer {
+            border-top: 1px solid var(--gray-200);
+            padding: 3rem 0 2rem;
+            background: white;
+        }
+        
+        /* Scroll Reveal */
+        .reveal {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.6s ease;
+        }
+        
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .dropdown-menu {
+            position: absolute;
+            z-index: 1000;
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            min-width: 200px;
+            padding: 0.5rem 0;
+        }
+        
+        .dropdown-item {
+            padding: 0.5rem 1rem;
+            color: var(--gray-700);
+            cursor: pointer;
+        }
+        
+        .dropdown-item:hover {
+            background: var(--gray-100);
+            color: var(--primary);
+        }
+        
+        /* Trust Badge Styles */
+        .trust-badge {
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: 1rem;
+            padding: 1rem;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+        
+        .trust-badge:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+        }
+        
+        .trust-number {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+        
+        /* Testimonial Card */
+        .testimonial-card {
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            transition: all 0.2s ease;
+        }
+        
+        .testimonial-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+        }
+        
+        /* Guarantee Badge */
+        .guarantee-badge {
+            background: rgba(27, 79, 114, 0.05);
+            border-radius: 1rem;
+            padding: 1rem;
+            text-align: center;
+        }
+            /* Fix dropdown cursor issues */
+    .dropdown-menu {
+        cursor: pointer;
+    }
+    
+    .dropdown-item {
+        cursor: pointer;
+    }
+    
+    .btn-group .btn, .dropdown .btn {
+        cursor: pointer;
+    }
+    /* Profile Sidebar Styles - FIXED (no modal overlay) */
+    .profile-sidebar {
+        position: fixed;
+        top: 0;
+        right: -320px;
+        width: 320px;
+        height: 100%;
+        z-index: 1060;
+        transition: right 0.3s ease;
+    }
+
+    .profile-sidebar.open {
+        right: 0;
+    }
+
+    /* Remove the dark overlay entirely - delete or comment out */
+    .sidebar-overlay {
+        display: none;
+    }
+
+    .sidebar-content {
+        position: absolute;
+        right: 0;
+        top: 0;
+        width: 320px;
+        height: 100%;
+        background: white;
+        box-shadow: -4px 0 20px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .sidebar-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid var(--gray-200);
+    }
+    
+    .sidebar-body {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1rem 0;
+    }
+    
+    .sidebar-menu {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .sidebar-item {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem 1.5rem;
+        color: var(--gray-700);
+        text-decoration: none;
+        transition: all 0.2s ease;
+        background: none;
+        border: none;
+        width: 100%;
+        text-align: right;
+        font-size: 1rem;
+    }
+    
+    .sidebar-item:hover {
+        background: var(--gray-100);
+        color: var(--primary);
+    }
+    
+    .sidebar-item i {
+        width: 24px;
+    }
+    
+    .sidebar-divider {
+        height: 1px;
+        background: var(--gray-200);
+        margin: 0.5rem 1.5rem;
+    }
+    
+    #sidebarToggle {
+        cursor: pointer;
+    }
+    
+    @media (max-width: 768px) {
+        .sidebar-content {
+            width: 280px;
+        }
+        .profile-sidebar {
+            right: -280px;
+        }
+    }
     </style>
     
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-modern sticky-top">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="{% url 'courses:home' %}" style="color: var(--mit-red);">
-                <i class="fas fa-graduation-cap"></i> رواق
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'courses:course_catalog' %}">الدورات</a>
-                    </li>
-                    {% if user.is_authenticated and user.is_instructor %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'courses:instructor_dashboard' %}">لوحة التحكم</a>
-                    </li>
-                    {% endif %}
+
+<!-- Navigation -->
+<nav class="navbar navbar-expand-lg sticky-top">
+    <div class="container">
+        <a class="navbar-brand" href="{% url 'courses:home' %}">
+            رواق
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'courses:home' %}">الرئيسية</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'courses:course_catalog' %}">الدورات</a>
+                </li>
+                {% if user.is_authenticated and user.is_instructor %}
+                <li class="nav-item">
+                    <a href="{% url 'courses:wishlist' %}" class="sidebar-item">
+                        <i class="fas fa-heart me-3"></i>
+                        <span>المفضلة</span>
+                    </a>     
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'courses:instructor_dashboard' %}">لوحة التحكم</a>
+                </li>
+                {% endif %}
+            </ul>
+            <ul class="navbar-nav">
+                {% if user.is_authenticated %}
+                <li class="nav-item">
+                    <button class="btn btn-link nav-link" type="button" id="sidebarToggle">
+                        <i class="fas fa-bars fa-lg"></i>
+                    </button>
+                </li>
+                {% else %}
+                <li class="nav-item">
+                    <a class="btn btn-outline-primary btn-sm" href="{% url 'users:login' %}">تسجيل الدخول</a>
+                </li>
+                <li class="nav-item me-2">
+                    <a class="btn btn-primary btn-sm" href="{% url 'users:register' %}">إنشاء حساب</a>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Messages -->
+{% if messages %}
+<div class="container mt-3">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show border-0 rounded-4" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="profile-sidebar" id="profileSidebar">
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <div class="sidebar-content">
+        <div class="sidebar-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">القائمة</h5>
+                <button type="button" class="btn-close" id="sidebarClose"></button>
+            </div>
+            <div class="sidebar-user mt-4 text-center">
+                <i class="fas fa-user-circle fa-4x text-primary"></i>
+                <h6 class="mt-2 mb-0">{{ user.get_full_name|default:user.username }}</h6>
+                <small class="text-muted">{{ user.role|title }}</small>
+            </div>
+        </div>
+        <div class="sidebar-body">
+            <div class="sidebar-menu">
+                <a href="{% url 'courses:my_courses' %}" class="sidebar-item">
+                    <i class="fas fa-book me-3"></i>
+                    <span>دوراتي</span>
+                </a>
+                <a href="{% url 'courses:my_progress' %}" class="sidebar-item">
+                    <i class="fas fa-chart-line me-3"></i>
+                    <span>تقدمي</span>
+                </a>
+                <a href="{% url 'users:profile' %}" class="sidebar-item">
+                    <i class="fas fa-user me-3"></i>
+                    <span>الملف الشخصي</span>
+                </a>
+                {% if user.is_instructor %}
+                <a href="{% url 'courses:instructor_dashboard' %}" class="sidebar-item">
+                    <i class="fas fa-chalkboard-user me-3"></i>
+                    <span>لوحة التحكم</span>
+                </a>
+                {% endif %}
+                <div class="sidebar-divider"></div>
+                <form method="post" action="{% url 'users:logout' %}" id="logout-form-sidebar">
+                    {% csrf_token %}
+                    <button type="submit" class="sidebar-item text-danger">
+                        <i class="fas fa-sign-out-alt me-3"></i>
+                        <span>تسجيل الخروج</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<main>
+    {% block content %}{% endblock %}
+</main>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <h5 class="fw-bold mb-3">رواق</h5>
+                <p class="text-muted small">منصة التعلم الجزائرية. نقدم دورات متميزة في مختلف المجالات لمساعدتك على تطوير مهاراتك.</p>
+            </div>
+            <div class="col-md-2 mb-4">
+                <h6 class="fw-bold mb-3">روابط سريعة</h6>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><a href="{% url 'courses:home' %}" class="text-muted small">الرئيسية</a></li>
+                    <li class="mb-2"><a href="{% url 'courses:course_catalog' %}" class="text-muted small">الدورات</a></li>
+                    <li class="mb-2"><a href="#" class="text-muted small">عن رواق</a></li>
                 </ul>
-                <ul class="navbar-nav">
-                    {% if user.is_authenticated %}
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-user-circle"></i> {{ user.username }}
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="{% url 'courses:my_courses' %}">دوراتي</a></li>
-                            <li><a class="dropdown-item" href="{% url 'courses:my_progress' %}">تقدمي</a></li>
-                            <li><a class="dropdown-item" href="{% url 'users:profile' %}">الملف الشخصي</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li>
-                                <form method="post" action="{% url 'users:logout' %}" style="display: inline;">
-                                    {% csrf_token %}
-                                    <button type="submit" class="dropdown-item" style="background: none; border: none; width: 100%; text-align: right;">
-                                        تسجيل الخروج
-                                    </button>
-                                </form>
-                            </li>
-                        </ul>
-                    </li>
-                    {% else %}
-                    <li class="nav-item">
-                        <a class="btn btn-mit-red btn-sm" href="{% url 'users:login' %}">تسجيل الدخول</a>
-                    </li>
-                    {% endif %}
+            </div>
+            <div class="col-md-3 mb-4">
+                <h6 class="fw-bold mb-3">التصنيفات</h6>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><a href="#" class="text-muted small">برمجة</a></li>
+                    <li class="mb-2"><a href="#" class="text-muted small">لغات</a></li>
+                    <li class="mb-2"><a href="#" class="text-muted small">أوفيس</a></li>
+                </ul>
+            </div>
+            <div class="col-md-3 mb-4">
+                <h6 class="fw-bold mb-3">تواصل معنا</h6>
+                <ul class="list-unstyled">
+                    <li class="mb-2"><a href="#" class="text-muted small"><i class="fas fa-envelope me-2"></i>info@riwaq.com</a></li>
                 </ul>
             </div>
         </div>
-    </nav>
-    
-    <!-- Messages -->
-    {% if messages %}
-    <div class="container mt-3">
-        {% for message in messages %}
-        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <hr class="my-3">
+        <div class="text-center text-muted small">
+            <p class="mb-0">© 2024 رواق - جميع الحقوق محفوظة</p>
         </div>
-        {% endfor %}
     </div>
-    {% endif %}
+</footer>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    AOS.init({ duration: 800, once: true });
     
-    <!-- Main Content -->
-    <main>
-        {% block content %}{% endblock %}
-    </main>
+    // Scroll reveal
+    const reveals = document.querySelectorAll('.reveal');
+    const revealObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('active');
+            }
+        });
+    }, { threshold: 0.1 });
     
-    <!-- Footer -->
-    <footer class="bg-white mt-5 py-4">
-        <div class="container text-center">
-            <p class="text-muted mb-0">© 2024 رواق - منصة التعلم الجزائرية</p>
-        </div>
-    </footer>
-    
-    <!-- Bootstrap JS Bundle -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    {% block extra_js %}{% endblock %}
+    reveals.forEach(el => revealObserver.observe(el));
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize all dropdowns
+        var dropdownElementList = [].slice.call(document.querySelectorAll('.dropdown-toggle'));
+        dropdownElementList.forEach(function(dropdownToggleEl) {
+            new bootstrap.Dropdown(dropdownToggleEl);
+        });
+    });
+    // Profile Sidebar Toggle - SIMPLIFIED (no overlay)
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const profileSidebar = document.getElementById('profileSidebar');
+    const sidebarClose = document.getElementById('sidebarClose');
+
+    function openSidebar() {
+        profileSidebar.classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeSidebar() {
+        profileSidebar.classList.remove('open');
+        document.body.style.overflow = '';
+    }
+
+    if (sidebarToggle) {
+        sidebarToggle.addEventListener('click', openSidebar);
+    }
+
+    if (sidebarClose) {
+        sidebarClose.addEventListener('click', closeSidebar);
+    }
+
+    // Close sidebar on escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && profileSidebar.classList.contains('open')) {
+            closeSidebar();
+        }
+    });
+</script>
+
+{% block extra_js %}{% endblock %}
 </body>
 </html>
